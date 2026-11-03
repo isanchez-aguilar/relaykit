@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { linkSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, linkSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { appendInside, assertInside, writeNewInside, writeTextAtomic } from './lib/safe-fs.mjs';
@@ -160,4 +160,13 @@ test('a file whose name ends in secrets.env is treated as a secret by the task g
   const root = folder(t);
   writeFileSync(join(root, 'my-secrets.env'), 'FAKE');
   assert.throws(() => taskPath(root, 'my-secrets.env'), /secret/);
+});
+
+test('a broken link at the target is refused, not followed (Windows creates the link target with a plain exclusive open)', fileLinks, t => {
+  const { repo } = repoWithEscapingLink(t, 'unused');
+  const nowhere = join(repo, 'nowhere.txt');
+  const dangling = join(repo, 'dangling.txt');
+  symlinkSync(nowhere, dangling);
+  assert.throws(() => writeNewInside(repo, dangling, 'x'), /through a link|EEXIST/);
+  assert.equal(existsSync(nowhere), false);
 });
