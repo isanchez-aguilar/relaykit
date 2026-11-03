@@ -3,7 +3,7 @@
 The contract `relayrace sync` installs into the global instructions of Claude Code,
 Codex and Antigravity. Only the text between the markers is installed. This one
 is a neutral starting point: to use your own, copy this file anywhere, edit it and
-set `contract` in the Relayrace config (or `RELAYKIT_CONTRACT`). Keep the
+set `contract` in the Relayrace config (or `RELAYRACE_CONTRACT`; the old `RELAYKIT_CONTRACT` is still read). Keep the
 `contract:start` / `contract:end` markers and keep it short: Codex loads the
 global contract together with the project's AGENTS.md up to 32 KiB, and
 `relayrace sync` refuses to go over.

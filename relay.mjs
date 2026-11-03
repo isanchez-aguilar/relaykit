@@ -6,6 +6,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync, openSync, closeSync, unlinkSync } from 'node:fs';
 import { basename, resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { readSetting } from './lib/config.mjs';
 import { findExecutable, launch } from './lib/exe.mjs';
 import { validateCommands } from './lib/guardrails.mjs';
 import { cheapestModel, loadProviders } from './lib/providers.mjs';
@@ -17,13 +18,13 @@ import { isMain } from './lib/is-main.mjs';
  * <repo>/.ai/project.json (install.mjs writes it). Without the file the agents
  * read AGENTS.md and no command is preapproved.
  */
-export function loadProject(cwd) {
+export function loadProject(cwd, env = process.env) {
   const path = join(cwd, '.ai/project.json');
   const project = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
-  return validateProject(project, cwd);
+  return validateProject(project, cwd, env);
 }
 
-export function validateProject(project, cwd = '.') {
+export function validateProject(project, cwd = '.', env = process.env) {
   if (!project || typeof project !== 'object' || Array.isArray(project)) throw new Error('.ai/project.json must be an object.');
   const rules = project.rules ?? ['AGENTS.md'];
   const checks = project.checks ?? [];
@@ -40,11 +41,12 @@ export function validateProject(project, cwd = '.') {
   // would otherwise spend the most expensive model on every relay turn. The
   // pin is the cheapest model that solves most steps (sonnet); a project that
   // needs more says so in claudeModel, and Opus is for extreme cases only.
-  // The owner approves each Fable use, so it also needs RELAYKIT_ALLOW_FABLE=1.
+  // The owner approves each Fable use, so it also needs RELAYRACE_ALLOW_FABLE=1
+  // (RELAYKIT_ALLOW_FABLE, AI_KIT_ALLOW_FABLE and KIT_ALLOW_FABLE still count).
   const claudeModel = project.claudeModel ?? 'sonnet';
   if (typeof claudeModel !== 'string' || !/^[a-z0-9.[\]-]+$/i.test(claudeModel)) throw new Error('.ai/project.json: claudeModel must be a model alias or id.');
-  if (/fable/i.test(claudeModel) && process.env.RELAYKIT_ALLOW_FABLE !== '1' && process.env.AI_KIT_ALLOW_FABLE !== '1' && process.env.KIT_ALLOW_FABLE !== '1') {
-    throw new Error('Fable needs the owner\'s approval for this run: set RELAYKIT_ALLOW_FABLE=1 only after the owner says yes.');
+  if (/fable/i.test(claudeModel) && readSetting(env, 'RELAYRACE_ALLOW_FABLE')?.value !== '1' && env.KIT_ALLOW_FABLE !== '1') {
+    throw new Error('Fable needs the owner\'s approval for this run: set RELAYRACE_ALLOW_FABLE=1 only after the owner says yes.');
   }
   return { name: project.name || basename(resolve(cwd)), rules, checks, claudeModel, jules: project.jules ?? null,
     ...(project.qwenAllow ? { qwenAllow: project.qwenAllow } : {}) };
@@ -178,9 +180,9 @@ export function runRelay(taskFile, { cwd = process.cwd(), invoke = launch, maxTu
     writeTextAtomic(snapshot, JSON.stringify(task));
     if (state.status === 'done') return state;
     const providers = [
-      { id: 'claude', exe: findExecutable('claude', process.env.RELAYKIT_CLAUDE_EXE || process.env.AI_KIT_CLAUDE_EXE) },
-      { id: 'agy', exe: findExecutable('agy', process.env.RELAYKIT_AGY_EXE || process.env.AI_KIT_AGY_EXE) },
-      { id: 'codex', exe: findExecutable('codex', process.env.RELAYKIT_CODEX_EXE || process.env.AI_KIT_CODEX_EXE) },
+      { id: 'claude', exe: findExecutable('claude', readSetting(process.env, 'RELAYRACE_CLAUDE_EXE')?.value) },
+      { id: 'agy', exe: findExecutable('agy', readSetting(process.env, 'RELAYRACE_AGY_EXE')?.value) },
+      { id: 'codex', exe: findExecutable('codex', readSetting(process.env, 'RELAYRACE_CODEX_EXE')?.value) },
     ];
     const env = { ...process.env };
     // Prefer the installed Git Bash to Windows' WSL launcher for repository checks.

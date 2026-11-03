@@ -1,3 +1,4 @@
+import { readSetting } from './lib/config.mjs';
 import { launch } from './lib/exe.mjs';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync, openSync, closeSync, unlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -54,7 +55,7 @@ export async function runJules(taskFile, {
   let state;
   const options = { cwd, encoding: 'utf8', windowsHide: true, timeout: 60000, maxBuffer: 16 * 1024 * 1024 };
   const cached = join(tmpdir(), 'jules_tmp', 'jules.exe');
-  const exe = process.env.RELAYKIT_JULES_EXE || (process.platform === 'win32' && existsSync(cached) ? cached : 'jules');
+  const exe = readSetting(process.env, 'RELAYRACE_JULES_EXE')?.value || (process.platform === 'win32' && existsSync(cached) ? cached : 'jules');
   const call = (program, args, input) => {
     const result = invoke(program, args, { ...options, ...(input === undefined ? {} : { input }) });
     if (result.status !== 0) throw new Error(String(result.stderr || result.error || 'Command failed'));

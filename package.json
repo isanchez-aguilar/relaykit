@@ -49,6 +49,7 @@
     "templates",
     "prompts",
     "docs",
+    "!docs/assets",
     "scripts",
     "install.mjs",
     "sync.mjs",

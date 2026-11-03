@@ -117,6 +117,15 @@ test('Claude is pinned to sonnet by default, and Fable needs an explicit approva
     if (saved === undefined) delete process.env.KIT_ALLOW_FABLE;
     else process.env.KIT_ALLOW_FABLE = saved;
   }
+  // The approval variable has three spellings; the newest set one decides, and nothing else is needed.
+  write({ claudeModel: 'claude-fable-5-1' });
+  assert.throws(() => loadProject(cwd, {}), /RELAYRACE_ALLOW_FABLE=1/);
+  assert.equal(loadProject(cwd, { RELAYRACE_ALLOW_FABLE: '1' }).claudeModel, 'claude-fable-5-1');
+  assert.equal(loadProject(cwd, { RELAYKIT_ALLOW_FABLE: '1' }).claudeModel, 'claude-fable-5-1');
+  assert.equal(loadProject(cwd, { AI_KIT_ALLOW_FABLE: '1' }).claudeModel, 'claude-fable-5-1');
+  assert.equal(loadProject(cwd, { KIT_ALLOW_FABLE: '1' }).claudeModel, 'claude-fable-5-1');
+  assert.throws(() => loadProject(cwd, { RELAYRACE_ALLOW_FABLE: '0', RELAYKIT_ALLOW_FABLE: '1' }), /approval/, 'the newest spelling wins');
+  assert.throws(() => loadProject(cwd, { RELAYRACE_ALLOW_FABLE: 'yes' }), /approval/);
   write({ claudeModel: 'opus; rm -rf .' });
   assert.throws(() => loadProject(cwd), /alias or id/);
 });

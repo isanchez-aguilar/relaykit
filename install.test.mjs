@@ -19,6 +19,15 @@ function repo(t, files = {}) {
   return { root, checkout, desk };
 }
 
+test('an Agent Desk backup made before the rename (.bak-relaykit) counts as the first backup', t => {
+  const r = repo(t);
+  writeFileSync(`${r.desk}.bak-relaykit`, 'the first version');
+  install({ repo: r.checkout, name: 'Portfolio', checks: [] }, { log: () => {}, agentDeskConfig: r.desk });
+  assert.equal(readFileSync(`${r.desk}.bak-relaykit`, 'utf8'), 'the first version');
+  assert.equal(existsSync(`${r.desk}.bak-relayrace`), false);
+  assert.deepEqual(JSON.parse(readFileSync(r.desk, 'utf8')).projects.map(p => p.name), ['Other', 'Portfolio']);
+});
+
 test('arguments: repeated checks, jules owner/name:branch, one repo, no unknown flags', () => {
   const opts = parseArgs(['C:/r', '--check', 'pnpm test', '--check', 'pnpm build', '--jules', 'me/site:main', '--claude-model', 'sonnet']);
   assert.deepEqual(opts.checks, ['pnpm test', 'pnpm build']);
@@ -57,13 +66,13 @@ test('install adds everything missing and registers the repo once', t => {
   assert.equal(opencode.permission.webfetch, 'deny');
   const desk = JSON.parse(readFileSync(r.desk, 'utf8'));
   assert.deepEqual(desk.projects.map(p => p.name), ['Other', 'Portfolio']);
-  assert.equal(existsSync(`${r.desk}.bak-relaykit`), true);
+  assert.equal(existsSync(`${r.desk}.bak-relayrace`), true);
   assert.equal(existsSync(`${r.desk}.bak-kit`), false);
-  assert.equal(readFileSync(`${r.desk}.bak-relaykit`, 'utf8'), deskBefore);
+  assert.equal(readFileSync(`${r.desk}.bak-relayrace`, 'utf8'), deskBefore);
   // A second run changes nothing.
   assert.deepEqual(install({ repo: r.checkout, checks: [] }, { log: () => {}, agentDeskConfig: r.desk }).added, []);
   assert.equal(JSON.parse(readFileSync(r.desk, 'utf8')).projects.length, 2);
-  assert.equal(readFileSync(`${r.desk}.bak-relaykit`, 'utf8'), deskBefore);
+  assert.equal(readFileSync(`${r.desk}.bak-relayrace`, 'utf8'), deskBefore);
 });
 
 test('from a worktree, --desk-path registers the main checkout instead', t => {
