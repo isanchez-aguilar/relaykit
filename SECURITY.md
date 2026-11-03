@@ -13,11 +13,11 @@ Only the latest release (`0.x`) receives fixes.
 
 ## What the tool does and does not do
 
-Relaykit starts other programs (Claude Code, Codex, Antigravity, Jules, a local
+Relayrace starts other programs (Claude Code, Codex, Antigravity, Jules, a local
 model) on your machine with your own logins. It is built to keep that bounded:
 
 - No dependencies, and no network access of its own except the local model's
-  health check and, in `relaykit update`, `git pull --ff-only`. The programs it
+  health check and, in `relayrace update`, `git pull --ff-only`. The programs it
   starts do use the network: Claude Code, Codex, Antigravity and Jules talk to their
   providers, `jules` to a remote Git repository, and `ci-local --docker` pulls
   container images and runs `pnpm` or `npm` installs.
@@ -30,7 +30,7 @@ model) on your machine with your own logins. It is built to keep that bounded:
 - It never writes another tool's permission rules: `init` prints them for you to
   apply. `init` never overwrites a file; `sync` only replaces files it generated
   and shows a preview first.
-- `relaykit providers ui` listens on 127.0.0.1 only, checks the Host and Origin of
+- `relayrace providers ui` listens on 127.0.0.1 only, checks the Host and Origin of
   every request, and needs a per-process token to write.
 - A pre-push hook (`ci-local --install-hook`) only runs the repository's own checks.
 

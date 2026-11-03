@@ -7,7 +7,7 @@ argument-hint: <PR, branch or diff to review>
 # /cross-review — independent review by another provider
 
 Review target: `$ARGUMENTS`. Say in one line how you will do it ("Reviewing with Codex, read-only"). The full reasoning is the cross-provider-review
-[playbook](https://github.com/isanchez-aguilar/relaykit/blob/main/docs/playbooks/cross-provider-review.md) in the Relaykit repo; this is the procedure.
+[playbook](https://github.com/isanchez-aguilar/relayrace-ai/blob/main/docs/playbooks/cross-provider-review.md) in the Relayrace repo; this is the procedure.
 
 ## 1. Choose the reviewer
 
@@ -29,7 +29,7 @@ is broken — fix it before the real review.
 - Antigravity: `agy -p "<prompt>" --sandbox --mode plan --output-format json`.
   Headless cannot ask permission: it needs `read_file(<checkout>)` allowed in
   its settings (and `deny` for secret files), otherwise it answers SUCCESS with
-  an empty response and `denied_actions`. `relaykit init` prints those rules;
+  an empty response and `denied_actions`. `relayrace init` prints those rules;
   the owner applies them. Use file-read tools only and list **every path** the
   reviewer must read in the prompt. Never `--dangerously-skip-permissions`.
 

@@ -1,7 +1,7 @@
 # Playbooks
 
 Processes that worked, written so an agent or a person can follow them. Each has
-a short skill form that `relaykit init` installs where it helps.
+a short skill form that `relayrace init` installs where it helps.
 
 | Playbook | Skill | In profiles |
 |---|---|---|

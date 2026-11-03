@@ -1,4 +1,4 @@
-// `relaykit init`: set a repository up for the kit. It only ADDS what is
+// `relayrace init`: set a repository up for the kit. It only ADDS what is
 // missing and never overwrites a file that exists; for one that does exist it
 // prints what it would have added, so the owner can merge the useful parts.
 //
@@ -15,11 +15,11 @@
 // It prints the Antigravity read rule a headless review needs instead of
 // writing it: that is a permission change the owner makes.
 //
-//   relaykit init [repo] [--profile generic|web-app|notes] [--name N] [--dry-run] [--verbose]
+//   relayrace init [repo] [--profile generic|web-app|notes] [--name N] [--dry-run] [--verbose]
 //        [--check "pnpm test"]... [--jules owner/name:branch] [--claude-model sonnet]
 //        [--desk-path <main checkout>]   (when <repo> is a worktree)
 //        [--qwen-allow "npx tsc --noEmit -p ."]...   (extra exact command for Qwen)
-//   relaykit init --update [repo] [--apply]   compare an installed repo with the kit;
+//   relayrace init --update [repo] [--apply]   compare an installed repo with the kit;
 //        --apply writes only missing files and ones never edited since install
 //
 // Dependency-free: Node 18+ built-ins only.
@@ -121,7 +121,7 @@ export function agyPath(path) {
 
 export function install(opts, { log = console.log, agentDeskConfig, kitDir = KIT_DIR } = {}) {
   const root = resolve(opts.repo || '.');
-  if (!existsSync(join(root, '.git'))) throw new Error(`${root} is not a git checkout. Run git init there if the folder is new, then retry relaykit init.`);
+  if (!existsSync(join(root, '.git'))) throw new Error(`${root} is not a git checkout. Run git init there if the folder is new, then retry relayrace init.`);
   const profileName = opts.profile || 'generic';
   const profile = PROFILES[profileName];
   if (!profile) throw new Error(`unknown profile "${profileName}" (choose ${PROFILE_NAMES.join(', ')})`);
@@ -196,14 +196,14 @@ export function install(opts, { log = console.log, agentDeskConfig, kitDir = KIT
     const ignored = existsSync(gitignore) ? readFileSync(gitignore, 'utf8') : '';
     const missing = IGNORED.filter(line => !ignored.split(/\r?\n/).includes(line));
     if (missing.length) {
-      if (!dryRun) appendInside(root, gitignore, `${ignored && !ignored.endsWith('\n') ? '\n' : ''}\n# Local relay state and Qwen tasks (Relaykit)\n${missing.join('\n')}\n`);
+      if (!dryRun) appendInside(root, gitignore, `${ignored && !ignored.endsWith('\n') ? '\n' : ''}\n# Local relay state and Qwen tasks (Relayrace)\n${missing.join('\n')}\n`);
       added.push('.gitignore');
       mode(`.gitignore (+ ${missing.join(', ')})`, dryRun ? 'would add' : 'updated');
     }
   }
 
   if (!agentDeskConfig) {
-    log('skipped  Agent Desk registration (not configured; set RELAYKIT_AGENT_DESK or "agentDesk" in the Relaykit config file)');
+    log('skipped  Agent Desk registration (not configured; set RELAYKIT_AGENT_DESK or "agentDesk" in the Relayrace config file)');
   } else if (!existsSync(agentDeskConfig)) {
     log(`skipped  Agent Desk registration (${agentDeskConfig} not found)`);
   } else {

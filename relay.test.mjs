@@ -15,7 +15,7 @@ test('the documented task fixture passes the production relay and Jules loader',
 });
 
 test('task loader rejects malformed required fields before either runner can invoke a CLI', t => {
-  const cwd = mkdtempSync(join(tmpdir(), 'relaykit-task-'));
+  const cwd = mkdtempSync(join(tmpdir(), 'relayrace-task-'));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
   const file = join(cwd, 'task.json');
   const valid = { id: 'valid-1', objective: 'Document behavior', acceptance: ['Observable result'] };
@@ -32,7 +32,7 @@ test('task loader rejects malformed required fields before either runner can inv
 });
 
 test('task loader accepts the minimum and maximum id lengths without changing task content', t => {
-  const cwd = mkdtempSync(join(tmpdir(), 'relaykit-task-boundary-'));
+  const cwd = mkdtempSync(join(tmpdir(), 'relayrace-task-boundary-'));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
   const file = join(cwd, 'task.json');
   for (const id of ['0', 'a'.repeat(61)]) {

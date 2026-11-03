@@ -6,7 +6,7 @@ argument-hint: <approved sha or tag>
 
 # /release-local — manual release, secrets never printed
 
-Release: `$ARGUMENTS`. The full text is the release-local [playbook](https://github.com/isanchez-aguilar/relaykit/blob/main/docs/playbooks/release-local.md) in the Relaykit repo. **Ask the owner once** ("Proceed with the release automatically?"). After a yes, run the sequence without a question per step;
+Release: `$ARGUMENTS`. The full text is the release-local [playbook](https://github.com/isanchez-aguilar/relayrace-ai/blob/main/docs/playbooks/release-local.md) in the Relayrace repo. **Ask the owner once** ("Proceed with the release automatically?"). After a yes, run the sequence without a question per step;
 without a yes, do nothing. Ship only the approved sha.
 
 ## Rules that do not bend

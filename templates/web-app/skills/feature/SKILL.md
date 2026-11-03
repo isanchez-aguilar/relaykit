@@ -57,7 +57,7 @@ message. Each prompt carries: the goal, the lane's file list, the contracts,
 the designer spec if it is UI, and the acceptance criteria that lane owns. Two
 lanes never edit the same file; if the breakdown says they would, merge them.
 Pass `model` explicitly on every Agent call (`sonnet` or `haiku` by default).
-A lane that another provider should take goes through `relaykit relay` per
+A lane that another provider should take goes through `relayrace relay` per
 `AGENTS.md → Delegation`.
 
 While they run: do not read source and do not «help». Wait for the reports. A

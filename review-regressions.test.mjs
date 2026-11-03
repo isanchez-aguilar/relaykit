@@ -9,7 +9,7 @@ import { checkLocalModel, checkTool, TOOLS } from './lib/doctor.mjs';
 import { BLOCK_START, BLOCK_END, GENERATED, isGenerated, upsertBlock } from './sync.mjs';
 
 function repo(t) {
-  const root = mkdtempSync(join(tmpdir(), 'relaykit-review-'));
+  const root = mkdtempSync(join(tmpdir(), 'relayrace-review-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(join(root, '.git'));
   return root;

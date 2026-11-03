@@ -40,7 +40,7 @@ current branch». If the quote is wrong or empty, fix the access first.
   - the same file needs `deny` rules for every secret file in that checkout
     (`.env`, `.dev.vars`, keys). Deny beats allow. Never allow a checkout that
     holds secrets without them;
-  - `relaykit init` prints those rules for the checkout; **you apply them**, the
+  - `relayrace init` prints those rules for the checkout; **you apply them**, the
     kit never writes another tool's permissions;
   - never pass `--dangerously-skip-permissions`;
   - list every path the reviewer must read in the prompt. It cannot browse

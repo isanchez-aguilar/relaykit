@@ -28,8 +28,8 @@ jobs:
       - name: Publish to npm (skipped when this version is already there)
         run: |
           VERSION="$(node -p "require('./package.json').version")"
-          if npm view "relaykit@$VERSION" version > /dev/null 2>&1; then
-            echo "relaykit@$VERSION is already on npm; nothing to publish"
+          if npm view "relayrace-ai@$VERSION" version > /dev/null 2>&1; then
+            echo "relayrace-ai@$VERSION is already on npm; nothing to publish"
           else
             npm publish --provenance --access public
           fi

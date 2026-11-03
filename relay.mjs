@@ -328,7 +328,7 @@ export function runRelay(taskFile, { cwd = process.cwd(), invoke = launch, maxTu
 
 if (isMain(import.meta.url)) {
   if (!process.argv[2] || process.argv[2] === '--help') {
-    console.log(`Usage: relaykit relay <task.json> [--max-turns N] [--rotate]  (run from the repository root)\nProviders are tried in the order of your providers file (relaykit providers); --rotate alternates between the installed CLIs instead.\nModel calls per run default to ${DEFAULT_MAX_TURNS}. Run in an idle, dedicated checkout. See the Relaykit README.`);
+    console.log(`Usage: relayrace relay <task.json> [--max-turns N] [--rotate]  (run from the repository root)\nProviders are tried in the order of your providers file (relayrace providers); --rotate alternates between the installed CLIs instead.\nModel calls per run default to ${DEFAULT_MAX_TURNS}. Run in an idle, dedicated checkout. See the Relayrace README.`);
   } else {
     try {
       const flag = process.argv.indexOf('--max-turns');

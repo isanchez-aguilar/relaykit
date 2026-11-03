@@ -1,31 +1,33 @@
-# Relaykit
+# Relayrace AI
 
-Make your AI coding agents work as one relay team: one contract, hand-offs when a quota runs out, and reviews across providers.
+[![test](https://github.com/isanchez-aguilar/relayrace-ai/actions/workflows/test.yml/badge.svg)](https://github.com/isanchez-aguilar/relayrace-ai/actions/workflows/test.yml) [![npm](https://img.shields.io/npm/v/relayrace-ai)](https://www.npmjs.com/package/relayrace-ai) [![license](https://img.shields.io/badge/license-Apache--2.0%20%2B%20MIT-blue)](LICENSE)
 
-Relaykit connects Claude Code, Codex, Antigravity (Gemini), Jules and a local Qwen. They share one work contract, they hand work to each other when one runs out of quota, and they review each other's changes. It has no dependencies: Node 18+ built-ins only, on Windows, macOS and Linux.
+**Run Claude Code, Codex, Gemini and Jules as one team.** One shared contract, automatic hand-offs when a quota runs out, and independent code review across model families. Zero dependencies.
+
+Relayrace (package `relayrace-ai`, command `relayrace`) connects Claude Code, Codex, Antigravity (Gemini), Jules and a local Qwen. They share one work contract, they hand work to each other when one runs out of quota, and they review each other's changes. It has no dependencies: Node 18+ built-ins only, on Windows, macOS and Linux.
 
 ## Quick start (5 minutes)
 
-You need Git and Node 18+. Relaykit coordinates the AI coding CLIs you already use and does not install them: have the ones you want (Claude Code, Codex, Antigravity's `agy`, Jules, OpenCode for a local model) and use at least two of Claude Code, Codex and Antigravity for the relay's independent review. Install from npm and see which it finds:
+You need Git and Node 18+. Relayrace coordinates the AI coding CLIs you already use and does not install them: have the ones you want (Claude Code, Codex, Antigravity's `agy`, Jules, OpenCode for a local model) and use at least two of Claude Code, Codex and Antigravity for the relay's independent review. Install from npm and see which it finds:
 
 ```bash
-npm install -g relaykit
-relaykit doctor
-relaykit sync        # shows the changes and asks before writing; --check only compares
+npm install -g relayrace-ai
+relayrace doctor
+relayrace sync        # shows the changes and asks before writing; --check only compares
 ```
 
-`relaykit sync` installs the default contract (`docs/contract.md`, a short set of neutral working rules) and the shared roles and skills into the global configuration of Claude Code, Codex and Antigravity. To use your own contract, copy that file, edit it and set `contract` in your [config](#configuration); keep its `contract:start` / `contract:end` (the Spanish `contrato:inicio` / `contrato:fin` are still read) markers.
+`relayrace sync` installs the default contract (`docs/contract.md`, a short set of neutral working rules) and the shared roles and skills into the global configuration of Claude Code, Codex and Antigravity. To use your own contract, copy that file, edit it and set `contract` in your [config](#configuration); keep its `contract:start` / `contract:end` (the Spanish `contrato:inicio` / `contrato:fin` are still read) markers.
 
-### From a checkout (updates with `relaykit update`)
+### From a checkout (updates with `relayrace update`)
 
 ```bash
-git clone https://github.com/isanchez-aguilar/relaykit.git && cd relaykit
+git clone https://github.com/isanchez-aguilar/relayrace-ai.git && cd relayrace-ai
 ./scripts/setup.sh        # Windows: .\scripts\setup.ps1
-relaykit doctor
-relaykit sync
+relayrace doctor
+relayrace sync
 ```
 
-Setup shows the Node executable and checkout it found, installs a launcher in your user bin folder, and asks before adding that folder to your user PATH. Answer `Y`, then open a new terminal before running `relaykit doctor` and `relaykit sync`. These commands then work from any folder. No administrator rights are needed. Re-run setup after moving the checkout or removing the Node version it uses. `-Yes` (PowerShell) or `--yes` (shell) accepts the PATH change without prompting.
+Setup shows the Node executable and checkout it found, installs a launcher in your user bin folder, and asks before adding that folder to your user PATH. Answer `Y`, then open a new terminal before running `relayrace doctor` and `relayrace sync`. These commands then work from any folder. No administrator rights are needed. Re-run setup after moving the checkout or removing the Node version it uses. `-Yes` (PowerShell) or `--yes` (shell) accepts the PATH change without prompting.
 
 If PowerShell blocks the setup script, run this once from the checkout:
 
@@ -33,13 +35,13 @@ If PowerShell blocks the setup script, run this once from the checkout:
 powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
 ```
 
-This only changes policy for that process. A script blocked before execution cannot print its own workaround. The Windows launcher is `%LOCALAPPDATA%\Relaykit\bin\relaykit.cmd`; the optional PowerShell companion lives under `bin\powershell\relaykit.ps1` so a restrictive execution policy does not block the ordinary `relaykit` command. On macOS/Linux, the launcher is `~/.local/bin/relaykit`; setup appends its PATH block to your shell's startup files (Bash/sh, Zsh or Fish). If `./scripts/setup.sh` is not executable, use `sh scripts/setup.sh`. If a new tab still has the old PATH, restart the terminal app.
+This only changes policy for that process. A script blocked before execution cannot print its own workaround. The Windows launcher is `%LOCALAPPDATA%\Relaykit\bin\relayrace.cmd`; the optional PowerShell companion lives under `bin\powershell\relayrace.ps1` so a restrictive execution policy does not block the ordinary `relayrace` command. On macOS/Linux, the launcher is `~/.local/bin/relayrace`; setup appends its PATH block to your shell's startup files (Bash/sh, Zsh or Fish). If `./scripts/setup.sh` is not executable, use `sh scripts/setup.sh`. If a new tab still has the old PATH, restart the terminal app.
 
 ### A new machine
 
-Run `relaykit doctor`, log in to the providers you use, then run `relaykit sync`. Sync previews changes and asks `Apply these N changes? [y/N]`. `--check` stays read-only; `--yes` applies without asking. Without an interactive terminal, plain `sync` behaves like `--check` and says so (exit 1 on drift or a declined change).
+Run `relayrace doctor`, log in to the providers you use, then run `relayrace sync`. Sync previews changes and asks `Apply these N changes? [y/N]`. `--check` stays read-only; `--yes` applies without asking. Without an interactive terminal, plain `sync` behaves like `--check` and says so (exit 1 on drift or a declined change).
 
-If you installed from npm, update with `npm update -g relaykit` and run `relaykit sync` again. From a checkout, use `relaykit update` to pull fast-forward updates into the checkout used by the launcher. It refuses local changes, including untracked files, and installations without their own Git checkout. After an update it tells you to run `relaykit sync` again. Your current folder does not change which checkout gets updated.
+If you installed from npm, update with `npm update -g relayrace` and run `relayrace sync` again. From a checkout, use `relayrace update` to pull fast-forward updates into the checkout used by the launcher. It refuses local changes, including untracked files, and installations without their own Git checkout. After an update it tells you to run `relayrace sync` again. Your current folder does not change which checkout gets updated.
 
 <details>
 <summary>Manual install</summary>
@@ -47,13 +49,13 @@ If you installed from npm, update with `npm update -g relaykit` and run `relayki
 With Node and npm already on PATH, the long forms remain available:
 
 ```bash
-npx relaykit doctor
-npx relaykit sync --check
-npx relaykit sync
-npm install -g relaykit
+npx relayrace-ai doctor
+npx relayrace-ai sync --check
+npx relayrace-ai sync
+npm install -g relayrace-ai
 ```
 
-From a local checkout, use `node bin/relaykit.mjs doctor` or `node bin/relaykit.mjs sync --check`. If Node is absent from PATH, use its full executable path. The setup scripts save that path for you.
+From a local checkout, use `node bin/relayrace.mjs doctor` or `node bin/relayrace.mjs sync --check`. If Node is absent from PATH, use its full executable path. The setup scripts save that path for you.
 
 </details>
 
@@ -62,12 +64,12 @@ From a local checkout, use `node bin/relaykit.mjs doctor` or `node bin/relaykit.
 ```bash
 cd my-repo
 git init                                                            # if the folder is new
-relaykit init --profile web-app --dry-run                             # what it would add
-relaykit init --profile web-app                                       # add it
+relayrace init --profile web-app --dry-run                             # what it would add
+relayrace init --profile web-app                                       # add it
 ```
 
 $1
-Then try it: in Claude Code run `/work <a small task>` (or `/bugfix <a bug>`); the skills split the work across the roles and ask another provider to review it. To hand a task between CLIs when one runs out of quota, write a `task.json` ([format](#taskjson)) and run `relaykit relay task.json`.
+Then try it: in Claude Code run `/work <a small task>` (or `/bugfix <a bug>`); the skills split the work across the roles and ask another provider to review it. To hand a task between CLIs when one runs out of quota, write a `task.json` ([format](#taskjson)) and run `relayrace relay task.json`.
 
 For Qwen, `init` prints a proposed `opencode.json` and the path where the user can save it. Review and apply it manually, merging with an existing file if needed. `init` never writes permission rules; the former `--with-opencode` and `--no-opencode` flags are removed. Qwen refuses missing or insufficient guardrails without changing them.
 
@@ -76,28 +78,28 @@ the owner reviews and applies those manually.
 
 ## Updating a repo
 
-Relaykit copies files into your repos, so a newer kit does not reach them by itself. `init` records a hash of each file it writes in `.ai/relaykit.lock.json`. Then:
+Relayrace copies files into your repos, so a newer kit does not reach them by itself. `init` records a hash of each file it writes in `.ai/relaykit.lock.json`. Then:
 
 ```bash
-relaykit init --update            # compare this repo with the kit (read-only)
-relaykit init --update --apply    # write the missing files and the ones you never edited
+relayrace init --update            # compare this repo with the kit (read-only)
+relayrace init --update --apply    # write the missing files and the ones you never edited
 ```
 
-Each file is one of: **current**, **missing**, **updatable** (unchanged since install, so replacing it loses nothing) or **modified** (you edited it, or the repo was installed before baselines existed). `--apply` only touches the first three kinds; modified files and the rules files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`) are never replaced, only listed. `relaykit doctor` shows the same state in one line. Commit the lock file with the repo. Global files are separate: `relaykit sync --check` and `relaykit sync`.
+Each file is one of: **current**, **missing**, **updatable** (unchanged since install, so replacing it loses nothing) or **modified** (you edited it, or the repo was installed before baselines existed). `--apply` only touches the first three kinds; modified files and the rules files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`) are never replaced, only listed. `relayrace doctor` shows the same state in one line. Commit the lock file with the repo. Global files are separate: `relayrace sync --check` and `relayrace sync`.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `relaykit init [repo] [--profile generic\|web-app\|notes]` | Set a repo up. Never overwrites; validates options and the effective project config before writing. Options: `--update` (compare installed files), `--apply` (with `--update`), `--dry-run`, `--verbose`, `--name`, `--check "cmd"` (repeat), `--jules owner/name:branch`, `--claude-model`, `--desk-path`, `--qwen-allow "cmd"`. |
-| `relaykit sync [--check\|--yes]` | Preview the **global** contract, roles and skills, then ask to apply. `--check` is read-only (exit 1 on drift); `--yes` applies without asking. Non-interactive plain sync is read-only. |
-| `relaykit update` | Fast-forward this clean Git checkout, then report whether to sync again. |
-| `relaykit ci-local [--docker\|--no-docker] [--no-checks] [--node 18,22]` | Run the repo's checks the way CI does. If `.ai/project.json` lists `checks` (plain commands such as `pnpm check`, `pnpm test`), each runs on this machine, and `--docker` repeats them in a throwaway Linux container per Node version (installing with pnpm or npm from the lockfile first). Without `checks` it runs `node --test` here and in a container per Node version, on a read-only copy without `.git`. Node versions come from `.github/workflows/test.yml`, else `engines.node`. Says what it could not run (no Docker, macOS) instead of implying it passed; exit 1 on any failure. `--install-hook` runs it before every `git push`. Use it when GitHub Actions is unavailable. |
-| `relaykit doctor [--json]` | CLIs on PATH, whether each looks logged in (read-only commands, no model quota), local model health, `sync --check` drift, and this repo's install state. |
-| `relaykit providers [list\|init\|pick\|ui]` | Your providers, plans, models and the order to try them in. `pick <capability>` says who takes a task; `ui` opens a local editor. See **Providers** below. |
-| `relaykit relay <task.json> [--max-turns N] [--rotate]` | Sequential hand-off in configured priority order by phase; the next eligible provider continues when a quota runs out. `--rotate` uses the legacy CLI alternation. |
-| `relaykit jules <task.json>` | One bounded Jules cloud task on its own branch, then local integration and review. |
-| `relaykit qwen [options]` | Delegate mechanical work to the local model safely (task file, timeout, files checked on disk). Options: `--task <file>` or `--prompt <text>`, `--expect <file>` (a file the run must produce), `--tsc <dir>` (typecheck after), `--optional` (skip, do not fail, when the model is down), `--health`, `--dry-run`, `--timeout-min N`. |
+| `relayrace init [repo] [--profile generic\|web-app\|notes]` | Set a repo up. Never overwrites; validates options and the effective project config before writing. Options: `--update` (compare installed files), `--apply` (with `--update`), `--dry-run`, `--verbose`, `--name`, `--check "cmd"` (repeat), `--jules owner/name:branch`, `--claude-model`, `--desk-path`, `--qwen-allow "cmd"`. |
+| `relayrace sync [--check\|--yes]` | Preview the **global** contract, roles and skills, then ask to apply. `--check` is read-only (exit 1 on drift); `--yes` applies without asking. Non-interactive plain sync is read-only. |
+| `relayrace update` | Fast-forward this clean Git checkout, then report whether to sync again. |
+| `relayrace ci-local [--docker\|--no-docker] [--no-checks] [--node 18,22]` | Run the repo's checks the way CI does. If `.ai/project.json` lists `checks` (plain commands such as `pnpm check`, `pnpm test`), each runs on this machine, and `--docker` repeats them in a throwaway Linux container per Node version (installing with pnpm or npm from the lockfile first). Without `checks` it runs `node --test` here and in a container per Node version, on a read-only copy without `.git`. Node versions come from `.github/workflows/test.yml`, else `engines.node`. Says what it could not run (no Docker, macOS) instead of implying it passed; exit 1 on any failure. `--install-hook` runs it before every `git push`. Use it when GitHub Actions is unavailable. |
+| `relayrace doctor [--json]` | CLIs on PATH, whether each looks logged in (read-only commands, no model quota), local model health, `sync --check` drift, and this repo's install state. |
+| `relayrace providers [list\|init\|pick\|ui]` | Your providers, plans, models and the order to try them in. `pick <capability>` says who takes a task; `ui` opens a local editor. See **Providers** below. |
+| `relayrace relay <task.json> [--max-turns N] [--rotate]` | Sequential hand-off in configured priority order by phase; the next eligible provider continues when a quota runs out. `--rotate` uses the legacy CLI alternation. |
+| `relayrace jules <task.json>` | One bounded Jules cloud task on its own branch, then local integration and review. |
+| `relayrace qwen [options]` | Delegate mechanical work to the local model safely (task file, timeout, files checked on disk). Options: `--task <file>` or `--prompt <text>`, `--expect <file>` (a file the run must produce), `--tsc <dir>` (typecheck after), `--optional` (skip, do not fail, when the model is down), `--health`, `--dry-run`, `--timeout-min N`. |
 
 ## task.json
 
@@ -123,7 +125,7 @@ A minimal relay task:
 Save it under the ignored `.ai/runs/task.json`, then run from the repository root:
 
 ```bash
-relaykit relay .ai/runs/task.json
+relayrace relay .ai/runs/task.json
 ```
 
 For Jules, add `"jules": { "repo": "example/project", "branch": "main" }` to
@@ -132,7 +134,7 @@ that JSON and put the same pair in `.ai/project.json`. The complete
 loader used by both runners. Then run:
 
 ```bash
-relaykit jules .ai/runs/task.json
+relayrace jules .ai/runs/task.json
 ```
 
 Jules needs a repository connected to Jules, a clean dedicated checkout whose
@@ -150,7 +152,7 @@ run with the same command and unchanged task; do not reuse an ID for different w
 | `web-app` | The six-role pipeline (program-manager, architect, ui-designer, developer, qa, docs-writer), the `feature`, `fix`, `qwen`, `redesign-module`, `release-local` and `cross-review` skills, `scripts/qwen.mjs` with its `scripts/lib/` helpers, the review prompt, and an `AGENTS.md` whose **Project rules** section the repo fills in. Prints the proposed OpenCode guardrails. |
 | `notes` | The writer role only, for an Obsidian or Markdown folder. |
 
-Files land in `.claude/agents`, `.claude/skills`, `.ai/` and `scripts/`. No project names or business rules are baked in: the roles name risk categories (money, inventory, permissions, state changes) and leave the specifics (tenancy, styling, concurrency contracts) to the repo's own **Project rules**. The roles and skills under `.claude/` run inside a Claude Code session; the delegation order in [Providers](#providers) governs which CLI the relay and `relaykit providers pick` choose across tools.
+Files land in `.claude/agents`, `.claude/skills`, `.ai/` and `scripts/`. No project names or business rules are baked in: the roles name risk categories (money, inventory, permissions, state changes) and leave the specifics (tenancy, styling, concurrency contracts) to the repo's own **Project rules**. The roles and skills under `.claude/` run inside a Claude Code session; the delegation order in [Providers](#providers) governs which CLI the relay and `relayrace providers pick` choose across tools.
 
 ## Configuration
 
@@ -183,17 +185,17 @@ Precedence, lowest to highest: defaults, then `~/.config/relaykit/config.json` (
 
 ### Optional: a project dashboard
 
-If you keep a dashboard that lists your projects in a `config.json` with a `projects` array of `{ "name", "path" }`, set `agentDesk` (or `RELAYKIT_AGENT_DESK`) to that file. `init` then registers each repo there, backing the file up once as `config.json.bak-relaykit`, and `sync` reads the paths to measure Codex's 32 KiB budget. Relaykit never starts or bundles a dashboard; the key is named after Agent Desk, a companion dashboard published separately, whose format this is.
+If you keep a dashboard that lists your projects in a `config.json` with a `projects` array of `{ "name", "path" }`, set `agentDesk` (or `RELAYKIT_AGENT_DESK`) to that file. `init` then registers each repo there, backing the file up once as `config.json.bak-relaykit`, and `sync` reads the paths to measure Codex's 32 KiB budget. Relayrace never starts or bundles a dashboard; the key is named after Agent Desk, a companion dashboard published separately, whose format this is.
 
 ## Providers
 
 Everyone has different subscriptions, so the order agents delegate in is data, not prose. One file lists your providers; **the list order is the priority**, and a task goes to the first enabled provider that can do it. If that provider cannot, or its result fails verification (tests, typecheck, a reviewer), it moves to the next, until the task is done: always the cheapest that works. Go down the list once per task; when no eligible provider is left, or the attempt or time budget the owner set is spent, stop and report what blocked it instead of retrying.
 
 ```bash
-relaykit providers init                 # write the default order to your file (never overwrites)
-relaykit providers                      # the order, with plan, models and what each can do
-relaykit providers pick review --exclude-family anthropic   # who reviews work Claude wrote
-relaykit providers ui                   # edit plans, models and order in a local page
+relayrace providers init                 # write the default order to your file (never overwrites)
+relayrace providers                      # the order, with plan, models and what each can do
+relayrace providers pick review --exclude-family anthropic   # who reviews work Claude wrote
+relayrace providers ui                   # edit plans, models and order in a local page
 ```
 
 The default priority order is configurable in the providers file described below. The default order is: local Qwen, Jules, Gemini via Antigravity, Antigravity's Claude models, Codex, then Claude Code on the cheapest model that solves the task (Opus only in extreme cases).
@@ -221,14 +223,14 @@ File lookup, first found wins: `<repo>/.ai/providers.json`, then `providers.json
 | `models[].cost` | `free`, `low`, `mid`, `high`. The cheapest model wins. `restricted: true` means extreme cases only (`pick --extreme`). |
 | `plan`, `notes` | Free text for you: the subscription or tier, and any limit worth remembering. |
 
-Never put keys or tokens in this file (a value that looks like one is refused), and Fable is never listed there: it needs the owner's yes for each use. Quota is not read from this file; use `relaykit doctor` and your dashboard for that. `relaykit relay` follows this order too, per phase: a CLI implements only through an enabled entry that can `implement` or `edit`, reviews only through one that can `review`, and a review never comes from the CLI or the model family that implemented (`--rotate` keeps the old alternation). The relay starts `agy` with `--model` set to the cheapest model its entry lists, so the family you declare is the family that runs. Check the ids with `agy models`; a wrong id makes that turn fail. `critical` is refused for Qwen, Jules and any Flash model, in the file and in `pick`; the editor works on your personal file and only shows a repo override as a notice.
+Never put keys or tokens in this file (a value that looks like one is refused), and Fable is never listed there: it needs the owner's yes for each use. Quota is not read from this file; use `relayrace doctor` and your dashboard for that. `relayrace relay` follows this order too, per phase: a CLI implements only through an enabled entry that can `implement` or `edit`, reviews only through one that can `review`, and a review never comes from the CLI or the model family that implemented (`--rotate` keeps the old alternation). The relay starts `agy` with `--model` set to the cheapest model its entry lists, so the family you declare is the family that runs. Check the ids with `agy models`; a wrong id makes that turn fail. `critical` is refused for Qwen, Jules and any Flash model, in the file and in `pick`; the editor works on your personal file and only shows a repo override as a notice.
 
 ## Reading doctor
 
 Fictional, anonymized excerpt (some tool rows omitted; versions are examples):
 
 ```text
-Relaykit doctor
+Relayrace doctor
 
 Config
   file          /home/user/.config/relaykit/config.json (found)
@@ -242,15 +244,15 @@ Tools
 Local model
   down    http://127.0.0.1:8080/health  (not reachable (optional: Qwen is never required))
 
-Global files (relaykit sync --check)
-  drift   1 file out of date; run `relaykit sync` to write them
+Global files (relayrace sync --check)
+  drift   1 file out of date; run `relayrace sync` to write them
             /home/user/.gemini/antigravity-cli/rules/relaykit-contract.md
 
 This repository
-  not installed; run `relaykit init --profile <generic|web-app|notes>`
+  not installed; run `relayrace init --profile <generic|web-app|notes>`
 ```
 
-**Launcher** reports whether `relaykit` is on PATH and the absolute Node executable running this invocation. **Config** identifies the config file and optional integrations. **Tools** separates
+**Launcher** reports whether `relayrace` is on PATH and the absolute Node executable running this invocation. **Config** identifies the config file and optional integrations. **Tools** separates
 installation from login (`yes`, `no`, `unknown`, or no login needed); these probes
 do not spend model quota. **Local model** is optional health, **Global files** is
 read-only drift, and **This repository** reports profile file presence and update status, not test
@@ -306,7 +308,7 @@ exits 1 for missing Git or unsupported Node, not every warning.
   terminal is stale, so close the program that hosts it (Windows Terminal, the
   editor or the agent app, not just the tab) and open it again. `True` with the
   tool still missing means it lives in another folder (`Get-Command <tool>`).
-  `relaykit` itself keeps working because the launcher stores the Node path.
+  `relayrace` itself keeps working because the launcher stores the Node path.
 
 ## Playbooks
 
@@ -332,7 +334,7 @@ The `cross-review` skill (all profiles that carry skills), `redesign-module` and
 
 ```bash
 node --test          # the whole suite; CI runs it on Windows, macOS and Linux with Node 18 and 22
-relaykit ci-local    # the same checks here, plus Linux containers when Docker is running
+relayrace ci-local    # the same checks here, plus Linux containers when Docker is running
 ```
 
 [CONTRIBUTING.md](CONTRIBUTING.md) explains the DCO sign-off (`git commit -s`).
@@ -344,6 +346,6 @@ relaykit ci-local    # the same checks here, plus Linux containers when Docker i
 | The code: `bin/`, `lib/`, `install.mjs`, `sync.mjs`, `relay.mjs`, `jules-relay.mjs`, the tests, the workflow | [Apache-2.0](LICENSE), with the [NOTICE](NOTICE) |
 | The templates the tool copies into other repos: `agents/`, `skills/`, `templates/`, `prompts/`, `docs/playbooks/`, and `qwen.mjs` (installed as `scripts/qwen.mjs`) with the copies of `lib/exe.mjs` and `lib/guardrails.mjs` installed as `scripts/lib/*` (the same two files are Apache-2.0 inside this repository) | [MIT](LICENSE-TEMPLATES), Copyright (c) 2026 Isaac Sanchez Aguilar |
 | `docs/contract.md` | A neutral starter contract, Apache-2.0 like the code. Write your own and point `contract` at it. |
-| The name | "Relaykit" is reserved; see [TRADEMARKS.md](TRADEMARKS.md). A fork must use another name. |
+| The name | "Relayrace" is reserved; see [TRADEMARKS.md](TRADEMARKS.md). A fork must use another name. |
 
 Files installed into your repo carry no license header; the notice for them is `LICENSE-TEMPLATES` in this repo, so keep it with any copy you redistribute.
