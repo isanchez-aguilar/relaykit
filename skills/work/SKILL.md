@@ -30,8 +30,8 @@ mechanical edits, `sonnet` for implementation and docs; `opus` only when a
 money or security judgement truly cannot be covered by another provider.
 **Never `fable` without asking the owner first.** Delegate in the order of the
 model-selection playbook (local Qwen, Jules, Gemini, Antigravity's Claude, Codex,
-and Claude subagents last; `relaykit providers` shows the owner's own order). Mechanical, verifiable chunks may go to the local model with
-`relaykit qwen --optional --task …` when the repo has the kit installed;
+and Claude subagents last; `relayrace providers` shows the owner's own order). Mechanical, verifiable chunks may go to the local model with
+`relayrace qwen --optional --task …` when the repo has the kit installed;
 SKIPPED means do it yourself.
 
 ## 3. Break it

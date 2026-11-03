@@ -6,11 +6,11 @@ labels: bug
 
 **What happened, and what you expected**
 
-**Steps to reproduce** (commands and their output; `relaykit doctor` is the useful one)
+**Steps to reproduce** (commands and their output; `relayrace doctor` is the useful one)
 
 **Environment**
 
-- Relaykit version (`relaykit --version`):
+- Relayrace version (`relayrace --version`):
 - OS and Node version:
 - Which providers are installed:
 

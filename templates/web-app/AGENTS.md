@@ -54,7 +54,7 @@ thing in one place.
 ## Delegation
 
 Try providers in this order, top to bottom (the playbook is
-[model-selection](https://github.com/isanchez-aguilar/relaykit/blob/main/docs/playbooks/model-selection.md) in the Relaykit repo):
+[model-selection](https://github.com/isanchez-aguilar/relayrace-ai/blob/main/docs/playbooks/model-selection.md) in the Relayrace repo):
 
 1. Local Qwen (optional): mechanical work with an exact expected output.
 2. Jules: bounded cloud tasks on their own branch.
@@ -70,7 +70,7 @@ Use the first provider on the list that CAN do the task. If it cannot, or its
 result fails verification (tests, typecheck, a reviewer), move to the next, until
 it is done: always the cheapest that works. Go down the list once per task; when no eligible provider is left, or the attempt or time budget the owner set is spent, stop and report what blocked it instead of retrying. Money, permissions, schema and
 architecture never go below Codex or Claude. A person's own order and models
-are in their providers file (`relaykit providers`).
+are in their providers file (`relayrace providers`).
 
 Opus only in extreme cases: a money or security judgement no other provider
 can cover. Never Fable without the owner's yes for that specific use. Whoever
@@ -92,7 +92,7 @@ tests, and record whether it was accepted, fixed or rewritten.
 
 ## Before delivery
 
-Run `relaykit ci-local` (the suite here and in Linux containers; `relaykit ci-local --install-hook` does it on every push) and report what it could not run, such as macOS, as not verified.
+Run `relayrace ci-local` (the suite here and in Linux containers; `relayrace ci-local --install-hook` does it on every push) and report what it could not run, such as macOS, as not verified.
 
 Run the applicable checks and the gate, and report each result; a check you did
 not run did not pass. A change is reviewed by a different provider with

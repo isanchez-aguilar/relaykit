@@ -38,7 +38,7 @@ jobs:
           npm pack --silent
           mkdir /tmp/consumer && cd /tmp/consumer
           npm init -y > /dev/null
-          npm install --silent "$GITHUB_WORKSPACE"/relaykit-*.tgz
-          npx relaykit --version
-          npx relaykit --help > /dev/null
-          npx relaykit doctor --json > /dev/null || test $? -eq 1
+          npm install --silent "$GITHUB_WORKSPACE"/relayrace-ai-*.tgz
+          npx relayrace-ai --version
+          npx relayrace-ai --help > /dev/null
+          npx relayrace-ai doctor --json > /dev/null || test $? -eq 1

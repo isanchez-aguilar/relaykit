@@ -24,17 +24,17 @@
 //     did not exist.
 //
 // Usage:
-//   relaykit qwen --health            (or: node scripts/qwen.mjs --health in a repo that carries a copy)
-//   relaykit qwen --optional --task .ai/qwen-tasks/foo.md [--expect path ...]
+//   relayrace qwen --health            (or: node scripts/qwen.mjs --health in a repo that carries a copy)
+//   relayrace qwen --optional --task .ai/qwen-tasks/foo.md [--expect path ...]
 //                         [--optional] [--tsc apps/web] [--timeout-min 20] [--queue-max-min 60] [--dry-run]
 //
 // Settings (all optional): the local model's health URL and the name of the
 // temp folder that holds the single-slot lock come from RELAYKIT_QWEN_URL /
-// RELAYKIT_QWEN_LOCK (the old AI_KIT_* names still work), else from the Relaykit config file (`qwen.healthUrl`,
+// RELAYKIT_QWEN_LOCK (the old AI_KIT_* names still work), else from the Relayrace config file (`qwen.healthUrl`,
 // `qwen.lockName`), else the defaults below. A repo can add its own standing
 // rules for the model as `qwenRules` (a list of strings) in .ai/project.json.
 //
-// `relaykit init --profile web-app` copies this runner and its lib helpers into
+// `relayrace init --profile web-app` copies this runner and its lib helpers into
 // scripts/, where cloud sessions and other machines have no kit installed.
 // Dependency-free: Node 18+ built-ins only. The pure helpers are
 // exported so they can be unit-tested without spawning anything.
@@ -406,7 +406,7 @@ export async function main(argv, { healthCheck = checkHealth, cliAvailable = ope
   // Not an availability problem, so --optional does not hide it: without the
   // repo's deny rules, --auto would approve anything the model asks for.
   if (!hasGuardrails(root)) {
-    throw new Error(`${root} has insufficient opencode.json guardrails; review the "relaykit init" proposal and apply it manually.`);
+    throw new Error(`${root} has insufficient opencode.json guardrails; review the "relayrace init" proposal and apply it manually.`);
   }
   const task = opts.task ? readFileSync(taskPath(root, opts.task), "utf8") : opts.prompt;
   const prompt = buildPrompt(task, { expect: opts.expect, tsc: opts.tsc, rules: projectRules(root) });

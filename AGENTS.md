@@ -1,4 +1,4 @@
-# AGENTS.md — Relaykit
+# AGENTS.md — Relayrace
 
 Rules for any coding agent, or person, working in this repository.
 
@@ -11,4 +11,4 @@ Rules for any coding agent, or person, working in this repository.
 - Files that `init` copies into other repos (`agents/`, `skills/`, `templates/`, `prompts/`, `qwen.mjs`) get no license header; the notice is `LICENSE-TEMPLATES`. `qwen.mjs` is installed with only `lib/exe.mjs` and `lib/guardrails.mjs` beside it (as `scripts/lib/`), so it may import nothing else from `lib/`.
 - One branch per change; never commit straight to `main`; sign commits off with `git commit -s` (DCO). No merge without the maintainer's OK.
 - Never use the Fable model without the owner's explicit approval for that use.
-- Before pushing, run `relaykit ci-local` (or `node --test`); `relaykit ci-local --install-hook` does it on every push.
+- Before pushing, run `relayrace ci-local` (or `node --test`); `relayrace ci-local --install-hook` does it on every push.

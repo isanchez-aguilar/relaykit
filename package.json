@@ -1,10 +1,12 @@
 {
-  "name": "relaykit",
+  "name": "relayrace-ai",
   "version": "0.1.0",
-  "description": "Make your AI coding agents work as one relay team: one contract, hand-offs when a quota runs out, and reviews across providers.",
+  "description": "Run Claude Code, Codex, Gemini and Jules as one team: a shared contract, automatic hand-offs when a quota runs out, and independent code review across model families.",
   "keywords": [
     "ai",
+    "ai-agents",
     "agents",
+    "multi-agent",
     "claude-code",
     "codex",
     "gemini",
@@ -14,15 +16,19 @@
     "llm",
     "cli",
     "developer-tools",
-    "code-review"
+    "code-review",
+    "orchestration",
+    "handoff",
+    "agents-md",
+    "coding-agents"
   ],
-  "homepage": "https://github.com/isanchez-aguilar/relaykit#readme",
+  "homepage": "https://github.com/isanchez-aguilar/relayrace-ai#readme",
   "bugs": {
-    "url": "https://github.com/isanchez-aguilar/relaykit/issues"
+    "url": "https://github.com/isanchez-aguilar/relayrace-ai/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/isanchez-aguilar/relaykit.git"
+    "url": "git+https://github.com/isanchez-aguilar/relayrace-ai.git"
   },
   "license": "(Apache-2.0 AND MIT)",
   "author": {
@@ -31,7 +37,8 @@
   },
   "type": "module",
   "bin": {
-    "relaykit": "bin/relaykit.mjs"
+    "relayrace-ai": "bin/relayrace.mjs",
+    "relayrace": "bin/relayrace.mjs"
   },
   "files": [
     "bin",
@@ -61,8 +68,8 @@
   },
   "scripts": {
     "test": "node --test",
-    "ci-local": "node bin/relaykit.mjs ci-local",
-    "doctor": "node bin/relaykit.mjs doctor",
+    "ci-local": "node bin/relayrace.mjs ci-local",
+    "doctor": "node bin/relayrace.mjs doctor",
     "prepublishOnly": "node --test"
   }
 }

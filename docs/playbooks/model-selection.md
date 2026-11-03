@@ -10,9 +10,9 @@ its result fails verification (tests, typecheck, a reviewer), move to the next,
 until the task is done: always the cheapest that works. A provider that returns
 something unverified has not done the task. Go down the list once per task; when no eligible provider is left, or the attempt or time budget the owner set is spent, stop and report what blocked it instead of retrying. (See *What never goes down the
 list* for what «can» excludes.) This is the default; each person's own order, models and plans
-live in their providers file (`relaykit providers`, edited by hand or in
-`relaykit providers ui`), and a repo may override it in `.ai/providers.json`.
-`relaykit providers pick <capability>` tells you who takes a task.
+live in their providers file (`relayrace providers`, edited by hand or in
+`relayrace providers ui`), and a repo may override it in `.ai/providers.json`.
+`relayrace providers pick <capability>` tells you who takes a task.
 
 1. **Local Qwen** — mechanical work with an exact expected output (fixtures,
    copies of a test you wrote, strings). Optional: if the server is down, the
@@ -66,7 +66,7 @@ below Codex or Claude; Qwen, Jules and Flash never decide these (the
 ## Limits to remember
 
 - Codex and Claude share nothing; each has its own quota and reset. Run
-  `relaykit doctor` to see which CLIs are installed and logged in before planning
+  `relayrace doctor` to see which CLIs are installed and logged in before planning
   a run around one of them.
 - Antigravity quota groups can be shared by several models; they are not
   independent credit pools.

@@ -8,12 +8,13 @@ First public release.
 
 ### Added
 
-- `relaykit doctor`, `init` (profiles `generic`, `web-app`, `notes`), `sync`, `update`, `providers`, `ci-local`, `relay`, `jules` and `qwen`.
+- `relayrace doctor`, `init` (profiles `generic`, `web-app`, `notes`), `sync`, `update`, `providers`, `ci-local`, `relay`, `jules` and `qwen`.
 - One-time setup scripts for Windows, macOS and Linux that install a launcher without administrator rights and ask before touching the user PATH.
 - A providers file with plans, models, capabilities and priority order, a local editor (`providers ui`), and a relay that follows it per phase and never accepts a review from the implementer's model family.
 - `init --update`: compares an installed repo with the kit and only replaces files that were never edited.
 - `ci-local` and a pre-push hook: the repository's checks on this machine and, with Docker, in Linux containers.
 - A neutral default contract.
+- Published as `relayrace-ai` (command `relayrace`). The project was called Relaykit during development, and the technical names it already used are kept: `RELAYKIT_*` variables, the `relaykit` config folder, `.ai/relaykit.lock.json` and the generated-file markers.
 
 ### Security
 

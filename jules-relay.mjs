@@ -146,7 +146,7 @@ export async function runJules(taskFile, {
 
 if (isMain(import.meta.url)) {
   if (!process.argv[2] || process.argv[2] === '--help') {
-    console.log('Usage: relaykit jules <task.json>  (run from the repository root)\nJules first, then local integration and independent review. See the Relaykit README.');
+    console.log('Usage: relayrace jules <task.json>  (run from the repository root)\nJules first, then local integration and independent review. See the Relayrace README.');
   } else {
     try {
       const state = await runJules(resolve(process.argv[2]));

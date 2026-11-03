@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: An idea for Relaykit
+about: An idea for Relayrace
 labels: enhancement
 ---
 

@@ -6,7 +6,7 @@ argument-hint: <module to redesign>
 
 # /redesign-module — one module, in this order
 
-Module: `$ARGUMENTS`. Say in one line that you are taking this route ("Redesigning module X"). The reasoning is the redesign-module [playbook](https://github.com/isanchez-aguilar/relaykit/blob/main/docs/playbooks/redesign-module.md) in the Relaykit repo. Follow the repo's design system, never a new visual language.
+Module: `$ARGUMENTS`. Say in one line that you are taking this route ("Redesigning module X"). The reasoning is the redesign-module [playbook](https://github.com/isanchez-aguilar/relayrace-ai/blob/main/docs/playbooks/redesign-module.md) in the Relayrace repo. Follow the repo's design system, never a new visual language.
 
 ## 1. Inventory the features
 
