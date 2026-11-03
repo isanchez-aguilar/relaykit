@@ -40,7 +40,7 @@
 // exported so they can be unit-tested without spawning anything.
 
 import { randomBytes } from "node:crypto";
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync, writeSync } from "node:fs";
+import { closeSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync, writeSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { basename, dirname, join, posix, resolve, win32 } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -296,12 +296,16 @@ export function logPath(now = new Date(), base = tmpdir(), name = qwenSettings()
  * file descriptor: the output is written to that descriptor, never by path.
  * Returns { log, taskFile, logFd }.
  */
+// Anything at the path, even a link to nowhere. 'wx' alone is not enough: on Windows it follows a broken link and creates its target.
+const lexists = (path) => { try { lstatSync(path); return true; } catch { return false; } };
+
 export function createRunFiles(log, prompt, attempts = 5) {
   const stem = log.replace(/\.log$/, "");
   for (let attempt = 0; attempt < attempts; attempt++) {
     const base = attempt === 0 ? stem : `${stem}-${randomBytes(3).toString("hex")}`;
     const logFile = `${base}.log`;
     const taskFile = `${base}.task.md`;
+    if (lexists(logFile) || lexists(taskFile)) continue;
     let logFd;
     try {
       logFd = openSync(logFile, "wx", 0o600);
