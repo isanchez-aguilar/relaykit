@@ -1,8 +1,9 @@
 name: release
 
 # Publishes to npm (with provenance) and creates the GitHub release when a version
-# tag is pushed:  git tag v0.1.0 && git push origin v0.1.0
-# Needs the NPM_TOKEN repository secret (an npm automation token).
+# tag is pushed:  git tag v0.2.0 && git push origin v0.2.0
+# Publishing to npm here needs the NPM_TOKEN repository secret (an npm automation
+# token). Without it the npm step only warns, and the GitHub release is still created.
 
 on:
   push:
@@ -30,6 +31,8 @@ jobs:
           VERSION="$(node -p "require('./package.json').version")"
           if npm view "relayrace-ai@$VERSION" version > /dev/null 2>&1; then
             echo "relayrace-ai@$VERSION is already on npm; nothing to publish"
+          elif [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::warning::No NPM_TOKEN secret, so nothing was published to npm. Publish by hand with npm publish; the GitHub release is still created."
           else
             npm publish --provenance --access public
           fi
