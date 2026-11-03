@@ -39,7 +39,8 @@
 // Dependency-free: Node 18+ built-ins only. The pure helpers are
 // exported so they can be unit-tested without spawning anything.
 
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync, writeSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { basename, dirname, join, posix, resolve, win32 } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -287,6 +288,41 @@ export function logPath(now = new Date(), base = tmpdir(), name = qwenSettings()
 }
 
 /**
+ * Create the run's log and task files, each exclusively ("wx": it fails if ANY entry
+ * already has the name, a symlink or hard link included), so nothing planted in the
+ * shared temp folder is ever written through. On a name collision a new unique name
+ * is tried; after `attempts` the run fails with a clear error. The empty log is
+ * created BEFORE the model starts (its path is printed first) and stays open as a
+ * file descriptor: the output is written to that descriptor, never by path.
+ * Returns { log, taskFile, logFd }.
+ */
+export function createRunFiles(log, prompt, attempts = 5) {
+  const stem = log.replace(/\.log$/, "");
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const base = attempt === 0 ? stem : `${stem}-${randomBytes(3).toString("hex")}`;
+    const logFile = `${base}.log`;
+    const taskFile = `${base}.task.md`;
+    let logFd;
+    try {
+      logFd = openSync(logFile, "wx", 0o600);
+    } catch (error) {
+      if (error.code === "EEXIST") continue;
+      throw error;
+    }
+    try {
+      writeFileSync(taskFile, prompt, { encoding: "utf8", flag: "wx", mode: 0o600 });
+    } catch (error) {
+      closeSync(logFd);
+      rmSync(logFile, { force: true }); // the empty file this attempt just created
+      if (error.code === "EEXIST") continue;
+      throw error;
+    }
+    return { log: logFile, taskFile, logFd };
+  }
+  throw new Error(`could not create a fresh log file next to ${log}: the names are taken; clear the folder and retry`);
+}
+
+/**
  * The repo's own standing rules for the model: `qwenRules` in .ai/project.json,
  * a list of short strings (money as strings, styles through tokens...). Anything
  * else is ignored rather than trusted into a prompt.
@@ -421,17 +457,17 @@ export async function main(argv, { healthCheck = checkHealth, cliAvailable = ope
   const task = opts.task ? readFileSync(taskPath(root, opts.task), "utf8") : opts.prompt;
   const prompt = buildPrompt(task, { expect: opts.expect, tsc: opts.tsc, rules: projectRules(root) });
 
-  const log = logPath(new Date(), tempBase);
-  const taskFile = log.replace(/\.log$/, ".task.md");
-
-  const args = opencodeArgs({ taskFile, root, title: `${basename(root)}-qwen-${basename(log, ".log")}` });
+  const plannedLog = logPath(new Date(), tempBase);
+  const argsFor = (taskFile, log) => opencodeArgs({ taskFile, root, title: `${basename(root)}-qwen-${basename(log, ".log")}` });
   if (opts.dryRun) {
-    console.log(`opencode ${args.map((a) => (a.includes(" ") ? JSON.stringify(a) : a)).join(" ")}`);
-    console.log(`task: ${taskFile}`);
+    const planned = plannedLog.replace(/\.log$/, ".task.md");
+    console.log(`opencode ${argsFor(planned, plannedLog).map((a) => (a.includes(" ") ? JSON.stringify(a) : a)).join(" ")}`);
+    console.log(`task: ${planned}`);
     return 0;
   }
-  mkdirSync(dirname(log), { recursive: true });
-  writeFileSync(taskFile, prompt, "utf8");
+  mkdirSync(dirname(plannedLog), { recursive: true });
+  const { log, taskFile, logFd } = createRunFiles(plannedLog, prompt);
+  const args = argsFor(taskFile, log);
 
   const release = await acquireLock(lockPath(), {
     maxWaitMs: opts.queueMaxMin * 60_000,
@@ -442,6 +478,7 @@ export async function main(argv, { healthCheck = checkHealth, cliAvailable = ope
     },
   });
   if (!release) {
+    closeSync(logFd);
     return skip(`model still busy after ${opts.queueMaxMin} min`);
   }
   for (const sig of ["SIGINT", "SIGTERM"]) {
@@ -462,7 +499,11 @@ export async function main(argv, { healthCheck = checkHealth, cliAvailable = ope
   });
   const elapsedMin = ((Date.now() - started) / 60_000).toFixed(1);
   release();
-  writeFileSync(log, `${r.stdout ?? ""}\n--- stderr ---\n${r.stderr ?? ""}`, "utf8");
+  try {
+    writeSync(logFd, `${r.stdout ?? ""}\n--- stderr ---\n${r.stderr ?? ""}`);
+  } finally {
+    closeSync(logFd);
+  }
 
   const timedOut = r.error?.code === "ETIMEDOUT";
   const missing = missingExpected(opts.expect, existsSync);

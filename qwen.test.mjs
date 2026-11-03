@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, linkSync, mkdtempSync, readFileSync, readdirSync, symlinkSync, writeFileSync, writeSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
 import {
   main,
+  createRunFiles,
   checkHealth,
   hasGuardrails,
   projectRoot,
@@ -356,4 +357,66 @@ test("the project root is the git top level of cwd, QWEN_ROOT wins, cwd is the f
 test("a repo without opencode.json guardrails is refused, even with --optional", () => {
   assert.equal(hasGuardrails("/r", () => "{}"), false);
   assert.equal(hasGuardrails("/r", () => false), false);
+});
+
+test("createRunFiles: the log and the task file are created fresh, empty log first, and written by descriptor", () => {
+  const dir = mkdtempSync(join(tmpdir(), "qwen-run-"));
+  const planned = join(dir, "2026-01-01T00-00-00-000Z.log");
+  const run = createRunFiles(planned, "do it");
+  assert.equal(run.log, planned);
+  assert.equal(run.taskFile, planned.replace(/\.log$/, ".task.md"));
+  assert.equal(readFileSync(run.log, "utf8"), "", "the empty log exists before the model starts");
+  assert.equal(readFileSync(run.taskFile, "utf8"), "do it");
+  writeSync(run.logFd, "output");
+  closeSync(run.logFd);
+  assert.equal(readFileSync(run.log, "utf8"), "output");
+});
+
+test("createRunFiles: an existing log or task name is never reused; a new unique name is picked", () => {
+  const dir = mkdtempSync(join(tmpdir(), "qwen-run-"));
+  const planned = join(dir, "a.log");
+  writeFileSync(planned, "someone else's");
+  const first = createRunFiles(planned, "p");
+  closeSync(first.logFd);
+  assert.notEqual(first.log, planned);
+  assert.equal(readFileSync(planned, "utf8"), "someone else's");
+  // A task name taken while the log name is free: the empty log it just made is removed again.
+  const dir2 = mkdtempSync(join(tmpdir(), "qwen-run-"));
+  writeFileSync(join(dir2, "b.task.md"), "mine");
+  const second = createRunFiles(join(dir2, "b.log"), "p");
+  closeSync(second.logFd);
+  assert.notEqual(second.log, join(dir2, "b.log"));
+  assert.equal(readFileSync(join(dir2, "b.task.md"), "utf8"), "mine");
+  assert.equal(existsSync(join(dir2, "b.log")), false);
+  // Nothing fresh to be had: a clear error, no overwrite.
+  assert.throws(() => createRunFiles(planned, "p", 1), /could not create a fresh log file/);
+  assert.equal(readdirSync(dir).length, 3);
+});
+
+test("createRunFiles: a symlink or hard link planted at the log or task path is not written through", (t) => {
+  const dir = mkdtempSync(join(tmpdir(), "qwen-run-"));
+  const precious = join(dir, "precious.txt");
+  writeFileSync(precious, "keep");
+  const planted = join(dir, "x.log");
+  try {
+    symlinkSync(precious, planted);
+  } catch {
+    try {
+      linkSync(precious, planted);
+    } catch (error) {
+      t.skip(`links cannot be made here: ${error.code}`);
+      return;
+    }
+  }
+  const run = createRunFiles(planted, "p");
+  writeSync(run.logFd, "output");
+  closeSync(run.logFd);
+  assert.equal(readFileSync(precious, "utf8"), "keep");
+  assert.notEqual(run.log, planted);
+  // A broken link counts as taken, too.
+  const dangling = join(dir, "y.task.md");
+  try { symlinkSync(join(dir, "nowhere"), dangling); } catch { return; }
+  const again = createRunFiles(join(dir, "y.log"), "p");
+  closeSync(again.logFd);
+  assert.equal(existsSync(join(dir, "nowhere")), false);
 });
