@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   BLOCK_END, BLOCK_START, CODEX_BUDGET, CONTRACT_FILE, GENERATED, KIT_DIR,
-  LEGACY_GENERATED, extractContract, isGenerated, knownProjectSizes, plan, runSync, sync, toCodexToml, upsertBlock,
+  LEGACY_GENERATED, LEGACY_GENERATED_RELAYKIT, LEGACY_GENERATED_AI_KIT, extractContract, isGenerated, knownProjectSizes, plan, runSync, sync, toCodexToml, upsertBlock,
 } from './sync.mjs';
 
 const note = body => `---\ntags: [x]\n---\n\n# Contrato\n\nIntro.\n\n<!-- contrato:inicio -->\n${body}\n<!-- contrato:fin -->\n`;
@@ -47,9 +47,9 @@ test('sync backs up the immediately previous bytes on every run, with unique ISO
   const second = readFileSync(file, 'utf8');
   writeFileSync(s.contractFile, note('third version'));
   sync({ ...s.options, now });
-  const backups = readdirSync(join(s.home, '.codex')).filter(n => n.startsWith('AGENTS.md.bak-relaykit-')).sort();
+  const backups = readdirSync(join(s.home, '.codex')).filter(n => n.startsWith('AGENTS.md.bak-relayrace-')).sort();
   assert.equal(backups.length, 2);
-  for (const name of backups) assert.match(name, /\.bak-relaykit-\d{4}-\d\d-\d\dT\d\d-\d\d-\d\d\.\d{3}Z$/);
+  for (const name of backups) assert.match(name, /\.bak-relayrace-\d{4}-\d\d-\d\dT\d\d-\d\d-\d\d\.\d{3}Z$/);
   assert.deepEqual(backups.map(n => readFileSync(join(s.home, '.codex', n), 'utf8')), [first, second]);
 });
 
@@ -61,7 +61,7 @@ test('a partial sync failure restores existing bytes and removes new files, temp
     const before = snapshot(s.root);
     let attempts = 0;
     assert.throws(() => sync({ ...s.options, io: { rename: (from, to) => {
-      assert.match(from, /\.tmp-relaykit-/);
+      assert.match(from, /\.tmp-relayrace-/);
       if (++attempts === failAt) throw new Error('injected replacement failure');
       renameSync(from, to);
     } } }), /injected replacement failure/);
@@ -115,7 +115,7 @@ test('the contract is only the text between the note markers', () => {
 
 test('the managed block is appended once and then replaced in place, keeping the rest', () => {
   const first = upsertBlock('## CodeGraph\n\nUse it.\n', 'v1');
-  assert.match(first, /^## CodeGraph\n\nUse it\.\n\n<!-- RELAYKIT_CONTRACT_START -->/);
+  assert.match(first, /^## CodeGraph\n\nUse it\.\n\n<!-- RELAYRACE_CONTRACT_START -->/);
   const second = upsertBlock(`${first}\n## Later section\n`, 'v2');
   assert.equal(second.split(BLOCK_START).length, 2);
   assert.match(second, /v2/);
@@ -146,9 +146,9 @@ test('sync writes every target, is idempotent, and check reports drift', t => {
   const claudeMd = readFileSync(join(s.home, '.claude/CLAUDE.md'), 'utf8');
   assert.match(claudeMd, /Keep me\./);
   assert.match(claudeMd, /Responde en español\./);
-  assert.equal(readdirSync(join(s.home, '.claude')).some(f => f.startsWith('CLAUDE.md.bak-relaykit-')), true);
+  assert.equal(readdirSync(join(s.home, '.claude')).some(f => f.startsWith('CLAUDE.md.bak-relayrace-')), true);
   assert.match(readFileSync(join(s.home, '.codex/AGENTS.md'), 'utf8'), /Responde en español\./);
-  assert.match(readFileSync(join(s.home, '.gemini/antigravity-cli/rules/relaykit-contract.md'), 'utf8'), /Responde en español\./);
+  assert.match(readFileSync(join(s.home, '.gemini/antigravity-cli/rules/relayrace-contract.md'), 'utf8'), /Responde en español\./);
   assert.ok(readFileSync(join(s.home, '.claude/agents/tester.md'), 'utf8').includes(GENERATED));
   assert.match(readFileSync(join(s.home, '.codex/agents/tester.toml'), 'utf8'), /name = "tester"/);
   assert.match(readFileSync(join(s.home, '.claude/skills/work/SKILL.md'), 'utf8'), /^---\nname: work/);
@@ -261,7 +261,7 @@ test('sync migrates the owned legacy rule after writing its replacement, with a 
   const s = sandbox(t);
   sync(s.options);
   const rules = join(s.home, '.gemini/antigravity-cli/rules');
-  const legacy = join(rules, 'isaac-contract.md'), target = join(rules, 'relaykit-contract.md');
+  const legacy = join(rules, 'isaac-contract.md'), target = join(rules, 'relayrace-contract.md');
   const old = `<!-- ${GENERATED} -->\r\nPrevious contract.\r\n`;
   writeFileSync(legacy, old);
   rmSync(target);
@@ -273,7 +273,7 @@ test('sync migrates the owned legacy rule after writing its replacement, with a 
     renameSync(from, to);
   } } });
   assert.equal(existsSync(legacy), false);
-  const backup = readdirSync(rules).find(n => n.startsWith('isaac-contract.md.bak-relaykit-'));
+  const backup = readdirSync(rules).find(n => n.startsWith('isaac-contract.md.bak-relayrace-'));
   assert.equal(readFileSync(join(rules, backup), 'utf8'), old);
   assert.deepEqual(sync({ ...s.options, check: true }), []);
 });
@@ -298,7 +298,7 @@ test('legacy migration rolls back failures before, during and after retirement',
     const s = sandbox(t);
     sync(s.options);
     const rules = join(s.home, '.gemini/antigravity-cli/rules');
-    const legacy = join(rules, 'isaac-contract.md'), target = join(rules, 'relaykit-contract.md');
+    const legacy = join(rules, 'isaac-contract.md'), target = join(rules, 'relayrace-contract.md');
     writeFileSync(legacy, `<!-- ${GENERATED} -->\nOld rule.\n`);
     rmSync(target);
     const before = snapshot(s.root);
@@ -316,7 +316,7 @@ test('a conflicting new rule cannot retire the owned legacy rule', t => {
   const rules = join(s.home, '.gemini/antigravity-cli/rules');
   mkdirSync(rules, { recursive: true });
   writeFileSync(join(rules, 'isaac-contract.md'), `<!-- ${GENERATED} -->\nOld.\n`);
-  writeFileSync(join(rules, 'relaykit-contract.md'), 'User rule.\n');
+  writeFileSync(join(rules, 'relayrace-contract.md'), 'User rule.\n');
   const before = snapshot(s.root);
   for (const check of [true, false]) assert.throws(() => sync({ ...s.options, check }), /not generated/);
   assert.deepEqual(snapshot(s.root), before);
@@ -327,7 +327,7 @@ test('migration restores an existing replacement and all other updates if retire
     const s = sandbox(t);
     sync(s.options);
     const rules = join(s.home, '.gemini/antigravity-cli/rules');
-    const legacy = join(rules, 'isaac-contract.md'), target = join(rules, 'relaykit-contract.md');
+    const legacy = join(rules, 'isaac-contract.md'), target = join(rules, 'relayrace-contract.md');
     const oldTarget = readFileSync(target, 'utf8');
     const oldLegacy = `<!-- ${GENERATED} -->\r\nLegacy bytes.\r\n`;
     writeFileSync(legacy, oldLegacy);
@@ -348,8 +348,8 @@ test('migration restores an existing replacement and all other updates if retire
     // Recovery leaves a retryable migration with distinct backups of both rules.
     sync(s.options);
     assert.equal(existsSync(legacy), false);
-    for (const [name, expected] of [['isaac-contract.md', oldLegacy], ['relaykit-contract.md', oldTarget]]) {
-      const backups = readdirSync(rules).filter(file => file.startsWith(`${name}.bak-relaykit-`));
+    for (const [name, expected] of [['isaac-contract.md', oldLegacy], ['relayrace-contract.md', oldTarget]]) {
+      const backups = readdirSync(rules).filter(file => file.startsWith(`${name}.bak-relayrace-`));
       assert.equal(backups.length, 1);
       assert.equal(readFileSync(join(rules, backups[0]), 'utf8'), expected);
     }
@@ -376,4 +376,54 @@ test('the default contract is the neutral one and works with the real sync plan'
   const files = plan({ ...s.options, contractFile: CONTRACT_FILE });
   assert.match(files[0].content, /Shared working rules/);
   assert.doesNotMatch(extractContract(readFileSync(CONTRACT_FILE, 'utf8')), /Isaac|Cloudflare|C:\\/);
+});
+
+test('files written under the relaykit name are recognised as ours and rewritten as ordinary updates', t => {
+  const s = sandbox(t);
+  sync(s.options);
+  // Rebuild what a relaykit-era sync left behind: the old header text, the old block markers, the old rule file.
+  const swap = text => text.replaceAll(GENERATED, LEGACY_GENERATED_RELAYKIT)
+    .replaceAll('RELAYRACE_CONTRACT_', 'RELAYKIT_CONTRACT_');
+  for (const file of [join(s.home, '.claude/CLAUDE.md'), join(s.home, '.codex/AGENTS.md'), join(s.home, '.claude/agents/tester.md'),
+    join(s.home, '.codex/agents/tester.toml'), join(s.home, '.claude/skills/work/SKILL.md'), join(s.home, '.gemini/antigravity-cli/rules/relayrace-contract.md')]) {
+    writeFileSync(file, swap(readFileSync(file, 'utf8')));
+  }
+  const rules = join(s.home, '.gemini/antigravity-cli/rules');
+  const oldRule = join(rules, 'relaykit-contract.md');
+  renameSync(join(rules, 'relayrace-contract.md'), oldRule);
+  assert.equal(isGenerated(readFileSync(oldRule, 'utf8')), true);
+  assert.equal(isGenerated(readFileSync(join(s.home, '.codex/agents/tester.toml'), 'utf8')), true);
+  // Everything is drift, nothing is a conflict, and a real sync converges.
+  assert.ok(sync({ ...s.options, check: true }).includes(oldRule));
+  sync(s.options);
+  assert.equal(existsSync(oldRule), false, 'the generated relaykit rule file is retired');
+  assert.ok(existsSync(join(rules, 'relayrace-contract.md')));
+  const claude = readFileSync(join(s.home, '.claude/CLAUDE.md'), 'utf8');
+  assert.ok(claude.includes(BLOCK_START) && !claude.includes('RELAYKIT_CONTRACT'));
+  assert.equal(claude.includes(LEGACY_GENERATED_RELAYKIT), false);
+  assert.deepEqual(sync({ ...s.options, check: true }), []);
+});
+
+test('a relaykit-named rule file we did not generate is preserved as unresolved drift', t => {
+  const s = sandbox(t);
+  sync(s.options);
+  const legacy = join(s.home, '.gemini/antigravity-cli/rules/relaykit-contract.md');
+  writeFileSync(legacy, 'My own rule.\n');
+  const before = snapshot(s.root);
+  for (const check of [true, false, true]) {
+    assert.deepEqual(sync({ ...s.options, check }), [legacy]);
+    assert.deepEqual(snapshot(s.root), before);
+  }
+});
+
+test('every older generated header still counts as ours, in both comment styles', () => {
+  const marks = [GENERATED, LEGACY_GENERATED_RELAYKIT, `${LEGACY_GENERATED_AI_KIT} — edit the source in the ai-kit repo`,
+    `${LEGACY_GENERATED} — edit the source in the notes, not this copy`];
+  for (const mark of marks) {
+    assert.equal(isGenerated(`<!-- ${mark} -->\nbody\n`), true, mark);
+    assert.equal(isGenerated(`# ${mark}\nname = "x"\n`), true, mark);
+    assert.equal(isGenerated(`---\nname: x\n---\n<!-- ${mark} -->\nbody\n`), true, mark);
+  }
+  assert.equal(isGenerated(`Manual citation: ${LEGACY_GENERATED_RELAYKIT}`), false);
+  assert.match(GENERATED, /^GENERATED by relayrace sync — edit the source in the Relayrace repo/);
 });

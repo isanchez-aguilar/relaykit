@@ -37,7 +37,7 @@ live in their providers file (`relayrace providers`, edited by hand or in
   reviews it.
 - **Never Fable (the most expensive Claude tier) without the owner's yes**, for that specific use: not as a subagent
   model, not in an agent's frontmatter, not with `--model`, not by switching
-  the session. The relay refuses it unless `RELAYKIT_ALLOW_FABLE=1` is set after
+  the session. The relay refuses it unless `RELAYRACE_ALLOW_FABLE=1` is set after
   the owner says yes.
 - Always pass an explicit model to a subagent. `inherit` lets a session on an
   expensive model spend it on every subagent.

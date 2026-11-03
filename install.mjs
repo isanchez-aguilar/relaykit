@@ -203,7 +203,7 @@ export function install(opts, { log = console.log, agentDeskConfig, kitDir = KIT
   }
 
   if (!agentDeskConfig) {
-    log('skipped  Agent Desk registration (not configured; set RELAYKIT_AGENT_DESK or "agentDesk" in the Relayrace config file)');
+    log('skipped  Agent Desk registration (not configured; set RELAYRACE_AGENT_DESK or "agentDesk" in the Relayrace config file)');
   } else if (!existsSync(agentDeskConfig)) {
     log(`skipped  Agent Desk registration (${agentDeskConfig} not found)`);
   } else {
@@ -212,7 +212,8 @@ export function install(opts, { log = console.log, agentDeskConfig, kitDir = KIT
     const deskPath = resolve(opts.deskPath || root);
     if (!config.projects.some(p => resolve(p.path).toLowerCase() === deskPath.toLowerCase())) {
       if (!dryRun) {
-        if (!existsSync(`${agentDeskConfig}.bak-relaykit`)) copyFileSync(agentDeskConfig, `${agentDeskConfig}.bak-relaykit`);
+        // The first version is kept once; a `.bak-relaykit` from before the rename counts as that backup.
+        if (!existsSync(`${agentDeskConfig}.bak-relayrace`) && !existsSync(`${agentDeskConfig}.bak-relaykit`)) copyFileSync(agentDeskConfig, `${agentDeskConfig}.bak-relayrace`);
         config.projects.push({ name, path: deskPath });
         writeFileSync(agentDeskConfig, `${JSON.stringify(config, null, 2)}\n`);
       }

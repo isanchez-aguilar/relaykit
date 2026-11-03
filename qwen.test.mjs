@@ -18,7 +18,7 @@ import {
   buildPrompt,
   DEFAULT_HEALTH_URL,
   DEFAULT_LOCK_NAME,
-  legacyConfigFile,
+  legacyConfigFiles,
   projectRules,
   qwenSettings,
   userConfigFile,
@@ -109,31 +109,53 @@ test("qwenSettings: environment, then the config file, then the defaults", () =>
   assert.deepEqual(qwenSettings({ ...base, env: {}, read: () => { throw new Error("none"); } }),
     { healthUrl: DEFAULT_HEALTH_URL, lockName: DEFAULT_LOCK_NAME });
   assert.deepEqual(qwenSettings({ ...base, env: {}, read: () => file }), { healthUrl: "http://10.0.0.5:8080/health", lockName: "shared-slot" });
-  assert.deepEqual(qwenSettings({ ...base, env: { RELAYKIT_QWEN_URL: "http://127.0.0.1:9/health", RELAYKIT_QWEN_LOCK: "mine" }, read: () => file }),
+  assert.deepEqual(qwenSettings({ ...base, env: { RELAYRACE_QWEN_URL: "http://127.0.0.1:9/health", RELAYRACE_QWEN_LOCK: "mine" }, read: () => file }),
     { healthUrl: "http://127.0.0.1:9/health", lockName: "mine" });
   // A lock name is a folder name: anything that could climb out of the temp dir is dropped.
-  assert.equal(qwenSettings({ ...base, env: { RELAYKIT_QWEN_LOCK: "../x" }, read: () => "{}" }).lockName, DEFAULT_LOCK_NAME);
-  // The old variable names and the old config folder still work.
+  assert.equal(qwenSettings({ ...base, env: { RELAYRACE_QWEN_LOCK: "../x" }, read: () => "{}" }).lockName, DEFAULT_LOCK_NAME);
+  // The old variable names still work, and the newest spelling wins.
   assert.equal(qwenSettings({ ...base, env: { AI_KIT_QWEN_URL: "http://old/health" }, read: () => "{}" }).healthUrl, "http://old/health");
+  assert.equal(qwenSettings({ ...base, env: { RELAYKIT_QWEN_URL: "http://mid/health", AI_KIT_QWEN_URL: "http://old/health" }, read: () => "{}" }).healthUrl, "http://mid/health");
+  assert.equal(qwenSettings({ ...base, env: { RELAYRACE_QWEN_URL: "http://new/health", RELAYKIT_QWEN_URL: "http://mid/health" }, read: () => "{}" }).healthUrl, "http://new/health");
+  assert.equal(qwenSettings({ ...base, env: { RELAYKIT_QWEN_LOCK: "mid-lock", AI_KIT_QWEN_LOCK: "old-lock" }, read: () => "{}" }).lockName, "mid-lock");
+  assert.equal(qwenSettings({ ...base, env: { AI_KIT_QWEN_LOCK: "old-lock" }, read: () => "{}" }).lockName, "old-lock");
+  assert.equal(qwenSettings({ ...base, env: { RELAYRACE_QWEN_LOCK: "new-lock", RELAYKIT_QWEN_LOCK: "mid-lock" }, read: () => "{}" }).lockName, "new-lock");
+  // The old config folders still work: relayrace, then relaykit, then ai-kit.
   const seen = [];
-  const legacyOnly = qwenSettings({ ...base, env: {}, read: (p) => { seen.push(p); if (p.includes("relaykit")) throw new Error("none"); return file; } });
+  const legacyOnly = qwenSettings({ ...base, env: {}, read: (p) => { seen.push(p); if (!p.includes("ai-kit")) throw new Error("none"); return file; } });
   assert.equal(legacyOnly.lockName, "shared-slot");
-  assert.equal(seen.length, 2);
+  assert.equal(seen.length, 3);
+  assert.match(seen[0], /relayrace/);
+  assert.match(seen[1], /relaykit/);
+  const relaykitFolder = qwenSettings({ ...base, env: {}, read: (p) => { if (!p.includes("relaykit")) throw new Error("none"); return file; } });
+  assert.equal(relaykitFolder.healthUrl, "http://10.0.0.5:8080/health");
+  const newestFolder = qwenSettings({ ...base, env: {}, read: (p) => (p.includes("relayrace") ? JSON.stringify({ qwen: { lockName: "new-folder" } }) : file) });
+  assert.equal(newestFolder.lockName, "new-folder");
+  // A file chosen with any spelling of the variable disables the folder fallback.
+  const chosen = [];
+  qwenSettings({ ...base, env: { RELAYKIT_CONFIG: "/x/c.json" }, read: (p) => { chosen.push(p); throw new Error("none"); } });
+  assert.equal(chosen.length, 1);
+});
+
+test("the default lock folder name stays relaykit-qwen so old and new copies of qwen.mjs share one lock", () => {
+  assert.equal(DEFAULT_LOCK_NAME, "relaykit-qwen");
 });
 
 test("userConfigFile: the standalone runner and the CLI agree on where the config lives", async () => {
-  const { configFilePath, legacyConfigFilePath } = await import("./lib/config.mjs");
+  const { configFilePath, legacyConfigFilePaths } = await import("./lib/config.mjs");
   const cases = [
     { env: { APPDATA: "A" }, platform: "win32", home: "H" },
     { env: {}, platform: "win32", home: "H" },
     { env: {}, platform: "darwin", home: "/Users/me" },
     { env: { XDG_CONFIG_HOME: "/cfg" }, platform: "linux", home: "/home/me" },
-    { env: { RELAYKIT_CONFIG: "c.json" }, platform: "linux", home: "/home/me" },
+    { env: { RELAYRACE_CONFIG: "c.json" }, platform: "linux", home: "/home/me" },
+    { env: { RELAYKIT_CONFIG: "mid.json" }, platform: "linux", home: "/home/me" },
     { env: { AI_KIT_CONFIG: "old.json" }, platform: "linux", home: "/home/me" },
+    { env: { RELAYRACE_CONFIG: "c.json", RELAYKIT_CONFIG: "mid.json", AI_KIT_CONFIG: "old.json" }, platform: "linux", home: "/home/me" },
   ];
   for (const c of cases) {
     assert.equal(userConfigFile(c), configFilePath(c));
-    assert.equal(legacyConfigFile(c), legacyConfigFilePath(c));
+    assert.deepEqual(legacyConfigFiles(c), legacyConfigFilePaths(c));
   }
 });
 

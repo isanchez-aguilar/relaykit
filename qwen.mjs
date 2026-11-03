@@ -29,8 +29,8 @@
 //                         [--optional] [--tsc apps/web] [--timeout-min 20] [--queue-max-min 60] [--dry-run]
 //
 // Settings (all optional): the local model's health URL and the name of the
-// temp folder that holds the single-slot lock come from RELAYKIT_QWEN_URL /
-// RELAYKIT_QWEN_LOCK (the old AI_KIT_* names still work), else from the Relayrace config file (`qwen.healthUrl`,
+// temp folder that holds the single-slot lock come from RELAYRACE_QWEN_URL /
+// RELAYRACE_QWEN_LOCK (the old RELAYKIT_* and AI_KIT_* names still work), else from the Relayrace config file (`qwen.healthUrl`,
 // `qwen.lockName`), else the defaults below. A repo can add its own standing
 // rules for the model as `qwenRules` (a list of strings) in .ai/project.json.
 //
@@ -56,6 +56,8 @@ export function projectRoot(cwd = process.cwd(), run = launch) {
 const REPO_ROOT = projectRoot();
 
 export const DEFAULT_HEALTH_URL = "http://127.0.0.1:8080/health";
+// Deliberately NOT renamed: qwen.mjs copies installed in other repos (older or newer)
+// must keep sharing one single-slot lock folder, so the default stays "relaykit-qwen".
 export const DEFAULT_LOCK_NAME = "relaykit-qwen";
 
 /**
@@ -63,9 +65,18 @@ export const DEFAULT_LOCK_NAME = "relaykit-qwen";
  * script has to work alone, so it reads the two qwen keys itself.
  */
 export function userConfigFile({ env = process.env, platform = process.platform, home = homedir() } = {}) {
-  const explicit = env.RELAYKIT_CONFIG || env.AI_KIT_CONFIG;
+  const explicit = setting(env, "RELAYRACE_CONFIG");
   if (explicit) return resolve(explicit);
-  return configIn("relaykit", { env, platform, home });
+  return configIn("relayrace", { env, platform, home });
+}
+
+/** A RELAYRACE_* variable under its current name, else the RELAYKIT_* or AI_KIT_* spelling (first nonblank wins). */
+function setting(env, variable) {
+  for (const prefix of ["RELAYRACE_", "RELAYKIT_", "AI_KIT_"]) {
+    const value = env[variable.replace(/^RELAYRACE_/, prefix)];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return undefined;
 }
 
 function configIn(folder, { env, platform, home }) {
@@ -73,27 +84,26 @@ function configIn(folder, { env, platform, home }) {
   return posix.join(env.XDG_CONFIG_HOME || posix.join(home, ".config"), folder, "config.json");
 }
 
-/** The file read before the rename (ai-kit), or undefined when a file was chosen explicitly. */
-export function legacyConfigFile({ env = process.env, platform = process.platform, home = homedir() } = {}) {
-  return env.RELAYKIT_CONFIG || env.AI_KIT_CONFIG ? undefined : configIn("ai-kit", { env, platform, home });
+/** The files read before the renames (relaykit, then ai-kit); none when a file was chosen explicitly. */
+export function legacyConfigFiles({ env = process.env, platform = process.platform, home = homedir() } = {}) {
+  return setting(env, "RELAYRACE_CONFIG") ? [] : ["relaykit", "ai-kit"].map((folder) => configIn(folder, { env, platform, home }));
 }
 
 /** Health URL and lock folder: environment, then the config file, then the defaults. */
 export function qwenSettings({ env = process.env, platform = process.platform, home = homedir(), read = (p) => readFileSync(p, "utf8") } = {}) {
   let qwen = {};
-  for (const file of [userConfigFile({ env, platform, home }), legacyConfigFile({ env, platform, home })]) {
-    if (!file) continue;
+  for (const file of [userConfigFile({ env, platform, home }), ...legacyConfigFiles({ env, platform, home })]) {
     try {
       qwen = JSON.parse(read(file).replace(/^\uFEFF/, "")).qwen ?? {};
       break;
     } catch {
-      // No file here, or one the CLI will complain about; try the old place, then the defaults.
+      // No file here, or one the CLI will complain about; try the old places, then the defaults.
     }
   }
   const text = (value) => (typeof value === "string" && value.trim() ? value.trim() : undefined);
-  const lockName = text(env.RELAYKIT_QWEN_LOCK) ?? text(env.AI_KIT_QWEN_LOCK) ?? text(qwen.lockName) ?? DEFAULT_LOCK_NAME;
+  const lockName = text(setting(env, "RELAYRACE_QWEN_LOCK")) ?? text(qwen.lockName) ?? DEFAULT_LOCK_NAME;
   return {
-    healthUrl: text(env.RELAYKIT_QWEN_URL) ?? text(env.AI_KIT_QWEN_URL) ?? text(qwen.healthUrl) ?? DEFAULT_HEALTH_URL,
+    healthUrl: text(setting(env, "RELAYRACE_QWEN_URL")) ?? text(qwen.healthUrl) ?? DEFAULT_HEALTH_URL,
     lockName: /^[\w.-]+$/.test(lockName) ? lockName : DEFAULT_LOCK_NAME,
   };
 }
