@@ -1,6 +1,6 @@
 {
   "name": "relayrace-ai",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Run Claude Code, Codex, Gemini and Jules as one team: a shared contract, automatic hand-offs when a quota runs out, and independent code review across model families.",
   "keywords": [
     "ai",
