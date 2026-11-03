@@ -13,4 +13,4 @@ Thanks for helping.
 
 1. Update `CHANGELOG.md` and bump `version` in `package.json`.
 2. Merge to `main` with CI green on all three systems.
-3. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`. The `release` workflow checks the tag against `package.json`, runs the suite, publishes to npm with provenance (it needs the `NPM_TOKEN` secret) and creates the GitHub release.
+3. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`. The `release` workflow checks the tag against `package.json`, runs the suite, publishes to npm with provenance (it needs the `NPM_TOKEN` secret; it skips the step when that version is already on npm, as after a manual first publish) and creates the GitHub release.

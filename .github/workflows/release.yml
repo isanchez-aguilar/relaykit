@@ -25,8 +25,14 @@ jobs:
         run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
       - name: Run the suite
         run: node --test
-      - name: Publish to npm
-        run: npm publish --provenance --access public
+      - name: Publish to npm (skipped when this version is already there)
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "relaykit@$VERSION" version > /dev/null 2>&1; then
+            echo "relaykit@$VERSION is already on npm; nothing to publish"
+          else
+            npm publish --provenance --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create the GitHub release
