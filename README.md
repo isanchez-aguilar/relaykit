@@ -45,6 +45,10 @@ Full walkthrough, including installing from a checkout: [Getting started](docs/g
 
 Your providers live in one file; **the list order is the priority.** The default is: local Qwen, Jules, Gemini via Antigravity, Antigravity's Claude models, Codex, then Claude Code on the cheapest model that solves the task (Opus only in extreme cases). A task goes to the first provider that can do it; if it cannot, or its result fails verification, it moves to the next. Edit the order with `relayrace providers ui`. Details: [Providers](docs/providers.md).
 
+## Works with Quota Desk
+
+[Quota Desk](https://github.com/isanchez-aguilar/quota-desk) (formerly Agent Desk) is a companion local dashboard for your AI coding agents: quotas, sessions, tokens and a work log, read on your own machine. It is optional and separate. Relayrace can register each repo in its `config.json` and use its project list to measure Codex's size budget; see [Configuration](docs/configuration.md#optional-a-project-dashboard).
+
 ## Commands
 
 | Command | What it does |

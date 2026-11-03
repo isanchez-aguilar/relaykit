@@ -22,7 +22,7 @@ Precedence, lowest to highest: built-in defaults, then the config file, then env
 
 | Key | Variable | Meaning |
 |---|---|---|
-| `agentDesk` | `RELAYRACE_AGENT_DESK` | Agent Desk `config.json` that `init` registers repos in; also used by `sync` to measure Codex's 32 KiB budget. |
+| `agentDesk` | `RELAYRACE_AGENT_DESK` | [Quota Desk](https://github.com/isanchez-aguilar/quota-desk) (formerly Agent Desk) `config.json` that `init` registers repos in; also used by `sync` to measure Codex's 32 KiB budget. |
 | `notes` | `RELAYRACE_NOTES` | Your notes folder (shown by `doctor`). |
 | `contract` | `RELAYRACE_CONTRACT` | A contract file for `sync` to use instead of `docs/contract.md`. |
 | `qwen.healthUrl` | `RELAYRACE_QWEN_URL` | Local model health URL. Default `http://127.0.0.1:8080/health`. |
@@ -51,7 +51,7 @@ The project was called Relaykit (and before that ai-kit). Nothing breaks on a ma
 
 ## Optional: a project dashboard
 
-If you keep a dashboard that lists your projects in a `config.json` with a `projects` array of `{ "name", "path" }`, set `agentDesk` (or `RELAYRACE_AGENT_DESK`) to that file. `init` then registers each repo there, backing the file up once as `config.json.bak-relayrace`, and `sync` reads the paths to measure Codex's 32 KiB budget. Relayrace never starts or bundles a dashboard; the key is named after Agent Desk, a companion dashboard published separately, whose format this is. A `.bak-relaykit` from before the rename counts as that first backup.
+If you keep a dashboard that lists your projects in a `config.json` with a `projects` array of `{ "name", "path" }`, set `agentDesk` (or `RELAYRACE_AGENT_DESK`) to that file. `init` then registers each repo there, backing the file up once as `config.json.bak-relayrace`, and `sync` reads the paths to measure Codex's 32 KiB budget. Relayrace never starts or bundles a dashboard; the key keeps the name of the dashboard's former name, Agent Desk. The companion dashboard is [Quota Desk](https://github.com/isanchez-aguilar/quota-desk), published separately, and this is its format. A `.bak-relaykit` from before the rename counts as that first backup.
 
 ## How `sync` writes files
 
@@ -66,7 +66,7 @@ If you keep a dashboard that lists your projects in a `config.json` with a `proj
 Codex reads a limited amount of instructions. `sync` and `doctor` measure that load and refuse to write a configuration over the budget.
 
 - The check finds the nearest `.git` file or directory above each working directory and measures effective `AGENTS.override.md` files before `AGENTS.md` from that root through the working directory, including ancestors of a registered subdirectory.
-- Agent Desk entries may include `cwd` (absolute or relative to `path`).
+- Quota Desk project entries may include `cwd` (absolute or relative to `path`).
 - It reads a top-level integer `project_doc_max_bytes` from Codex's `config.toml`, including single- and double-quoted keys, and keeps a 2 KiB margin (32 KiB default).
 - Missing project paths, unknown Git roots or nested working directories, unreadable config, or unsupported discovery/profile settings (including quoted, dotted and table forms) produce **incomplete coverage**, never a budget guarantee.
 
