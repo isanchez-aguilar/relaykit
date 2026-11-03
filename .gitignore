@@ -1,0 +1,6 @@
+node_modules/
+.ai/runs/
+.ai/qwen-tasks/
+.env
+.env.*
+*.log

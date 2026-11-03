@@ -1,0 +1,9 @@
+{
+  "id": "document-health-check",
+  "objective": "Document the existing health-check command.",
+  "acceptance": [
+    "README names the existing health-check command and its expected output.",
+    "The documented command matches the implementation."
+  ],
+  "jules": { "repo": "example/project", "branch": "main" }
+}

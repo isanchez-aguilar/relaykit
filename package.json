@@ -1,0 +1,68 @@
+{
+  "name": "relaykit",
+  "version": "0.1.0",
+  "description": "Make your AI coding agents work as one relay team: one contract, hand-offs when a quota runs out, and reviews across providers.",
+  "keywords": [
+    "ai",
+    "agents",
+    "claude-code",
+    "codex",
+    "gemini",
+    "antigravity",
+    "jules",
+    "qwen",
+    "llm",
+    "cli",
+    "developer-tools",
+    "code-review"
+  ],
+  "homepage": "https://github.com/isanchez-aguilar/relaykit#readme",
+  "bugs": {
+    "url": "https://github.com/isanchez-aguilar/relaykit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isanchez-aguilar/relaykit.git"
+  },
+  "license": "(Apache-2.0 AND MIT)",
+  "author": {
+    "name": "Isaac Sanchez Aguilar",
+    "url": "https://github.com/isanchez-aguilar"
+  },
+  "type": "module",
+  "bin": {
+    "relaykit": "bin/relaykit.mjs"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "!lib/**/*.test.mjs",
+    "agents",
+    "skills",
+    "templates",
+    "prompts",
+    "docs",
+    "scripts",
+    "install.mjs",
+    "sync.mjs",
+    "relay.mjs",
+    "jules-relay.mjs",
+    "qwen.mjs",
+    "LICENSE",
+    "LICENSE-TEMPLATES",
+    "NOTICE",
+    "TRADEMARKS.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test",
+    "ci-local": "node bin/relaykit.mjs ci-local",
+    "doctor": "node bin/relaykit.mjs doctor",
+    "prepublishOnly": "node --test"
+  }
+}

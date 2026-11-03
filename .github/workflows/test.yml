@@ -1,0 +1,44 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  node-test:
+    name: node --test (${{ matrix.os }}, node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        node: [18, 22]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Run the suite
+        run: node --test
+
+  package:
+    name: npm package installs and runs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Pack, install the tarball and run it
+        run: |
+          npm pack --silent
+          mkdir /tmp/consumer && cd /tmp/consumer
+          npm init -y > /dev/null
+          npm install --silent "$GITHUB_WORKSPACE"/relaykit-*.tgz
+          npx relaykit --version
+          npx relaykit --help > /dev/null
+          npx relaykit doctor --json > /dev/null || test $? -eq 1
