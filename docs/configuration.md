@@ -35,7 +35,7 @@ Other variables:
 | `RELAYRACE_CONFIG` | Use this file instead of the default config file (the old-folder fallback is then off). |
 | `RELAYRACE_PROVIDERS` | Use this providers file. See [Providers](providers.md). |
 | `RELAYRACE_CLAUDE_EXE`, `RELAYRACE_AGY_EXE`, `RELAYRACE_CODEX_EXE`, `RELAYRACE_JULES_EXE` | Where the relay finds each CLI. |
-| `RELAYRACE_ALLOW_FABLE=1` | Lets the relay use Fable, the most expensive model tier, for one run. Set it only when the owner has said yes to that use. Without it the relay refuses. |
+| `RELAYRACE_ALLOW_FABLE=1` | Lets the relay use Fable, the most expensive model tier, for one run. Set it only when the owner has said yes to that use. Without it the relay refuses. The old `RELAYKIT_ALLOW_FABLE`, `AI_KIT_ALLOW_FABLE` and `KIT_ALLOW_FABLE` no longer count here: this is a per-use approval, not a standing setting. |
 | `CODEX_HOME` | Codex's config directory for `sync` and `doctor` (default `~/.codex`). |
 
 ## Old names are still read

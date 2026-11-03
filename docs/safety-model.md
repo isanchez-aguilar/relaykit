@@ -5,8 +5,12 @@ The rules the tool follows, so you know what it will never do. To report a vulne
 ## Files
 
 - `init` never overwrites a file. `sync` only replaces owned files or owned contract blocks, and refuses measured instruction loads above the Codex budget.
-- Writes by `init`, `init --update`, the relay and the Jules bridge never go through a symlink or junction that leaves the repository, create new files exclusively, replace files through unpredictable temporary names, and refuse a file that has a second hard link.
+- Writes by `init`, `init --update`, the relay and the Jules bridge never go through a symlink or junction that leaves the repository, create new files exclusively, replace files through unpredictable temporary names, and refuse a file that has a second hard link (appends to `.gitignore` included). The providers file and the local model's log and task files follow the same rules, and launchers, git hooks and shell profiles count as generated only when the mark is a line of its own, so a hand-written file that merely mentions it is never overwritten or removed.
 - Permission proposals for OpenCode and Antigravity are printed for you to apply manually. `init` never writes permission rules.
+
+## Known limits
+
+Checks and writes resolve paths separately, so a process that swaps a parent directory for a link between the check and the write can still redirect a write. Node has no `openat`, so this cannot be closed from here; exploiting it needs a hostile local process running at the same time as the same user.
 
 ## Secrets
 

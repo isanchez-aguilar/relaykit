@@ -41,11 +41,12 @@ export function validateProject(project, cwd = '.', env = process.env) {
   // would otherwise spend the most expensive model on every relay turn. The
   // pin is the cheapest model that solves most steps (sonnet); a project that
   // needs more says so in claudeModel, and Opus is for extreme cases only.
-  // The owner approves each Fable use, so it also needs RELAYRACE_ALLOW_FABLE=1
-  // (RELAYKIT_ALLOW_FABLE, AI_KIT_ALLOW_FABLE and KIT_ALLOW_FABLE still count).
+  // The owner approves each Fable use, so it also needs RELAYRACE_ALLOW_FABLE=1. Only
+  // that exact variable counts: this is a per-use approval, not a standing setting, so
+  // the old RELAYKIT_/AI_KIT_/KIT_ spellings are deliberately not read here.
   const claudeModel = project.claudeModel ?? 'sonnet';
   if (typeof claudeModel !== 'string' || !/^[a-z0-9.[\]-]+$/i.test(claudeModel)) throw new Error('.ai/project.json: claudeModel must be a model alias or id.');
-  if (/fable/i.test(claudeModel) && readSetting(env, 'RELAYRACE_ALLOW_FABLE')?.value !== '1' && env.KIT_ALLOW_FABLE !== '1') {
+  if (/fable/i.test(claudeModel) && env.RELAYRACE_ALLOW_FABLE?.trim() !== '1') {
     throw new Error('Fable needs the owner\'s approval for this run: set RELAYRACE_ALLOW_FABLE=1 only after the owner says yes.');
   }
   return { name: project.name || basename(resolve(cwd)), rules, checks, claudeModel, jules: project.jules ?? null,

@@ -104,28 +104,19 @@ test('Claude is pinned to sonnet by default, and Fable needs an explicit approva
   const write = value => writeFileSync(join(cwd, '.ai/project.json'), JSON.stringify(value));
   write({ claudeModel: 'sonnet' });
   assert.equal(loadProject(cwd).claudeModel, 'sonnet');
-  const saved = process.env.KIT_ALLOW_FABLE;
-  delete process.env.KIT_ALLOW_FABLE;
-  try {
-    for (const fable of ['fable', 'claude-fable-5-1']) {
-      write({ claudeModel: fable });
-      assert.throws(() => loadProject(cwd), /approval/);
-    }
-    process.env.KIT_ALLOW_FABLE = '1';
-    assert.equal(loadProject(cwd).claudeModel, 'claude-fable-5-1');
-  } finally {
-    if (saved === undefined) delete process.env.KIT_ALLOW_FABLE;
-    else process.env.KIT_ALLOW_FABLE = saved;
+  // Only RELAYRACE_ALLOW_FABLE=1 approves a Fable use.
+  for (const fable of ['fable', 'claude-fable-5-1']) {
+    write({ claudeModel: fable });
+    assert.throws(() => loadProject(cwd, {}), /RELAYRACE_ALLOW_FABLE=1/);
   }
-  // The approval variable has three spellings; the newest set one decides, and nothing else is needed.
   write({ claudeModel: 'claude-fable-5-1' });
-  assert.throws(() => loadProject(cwd, {}), /RELAYRACE_ALLOW_FABLE=1/);
   assert.equal(loadProject(cwd, { RELAYRACE_ALLOW_FABLE: '1' }).claudeModel, 'claude-fable-5-1');
-  assert.equal(loadProject(cwd, { RELAYKIT_ALLOW_FABLE: '1' }).claudeModel, 'claude-fable-5-1');
-  assert.equal(loadProject(cwd, { AI_KIT_ALLOW_FABLE: '1' }).claudeModel, 'claude-fable-5-1');
-  assert.equal(loadProject(cwd, { KIT_ALLOW_FABLE: '1' }).claudeModel, 'claude-fable-5-1');
-  assert.throws(() => loadProject(cwd, { RELAYRACE_ALLOW_FABLE: '0', RELAYKIT_ALLOW_FABLE: '1' }), /approval/, 'the newest spelling wins');
+  // The legacy spellings are a standing setting from another era: they must not authorize a use.
+  for (const legacy of ['RELAYKIT_ALLOW_FABLE', 'AI_KIT_ALLOW_FABLE', 'KIT_ALLOW_FABLE']) {
+    assert.throws(() => loadProject(cwd, { [legacy]: '1' }), /approval/, legacy);
+  }
   assert.throws(() => loadProject(cwd, { RELAYRACE_ALLOW_FABLE: 'yes' }), /approval/);
+  assert.throws(() => loadProject(cwd, { RELAYRACE_ALLOW_FABLE: '0', RELAYKIT_ALLOW_FABLE: '1' }), /approval/);
   write({ claudeModel: 'opus; rm -rf .' });
   assert.throws(() => loadProject(cwd), /alias or id/);
 });

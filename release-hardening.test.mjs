@@ -10,6 +10,7 @@ import { hashContent, replaceIfUnchanged } from './lib/update.mjs';
 import { splitCommand } from './lib/ci-local.mjs';
 import { BLOCK_END, BLOCK_START, GENERATED, extractContract, upsertBlock } from './sync.mjs';
 import { taskPath } from './lib/guardrails.mjs';
+import { saveProviders } from './lib/providers.mjs';
 
 const folder = t => { const dir = mkdtempSync(join(tmpdir(), 'relayrace-hard-')); t.after(() => rmSync(dir, { recursive: true, force: true })); return dir; };
 const linkType = process.platform === 'win32' ? 'junction' : 'dir';
@@ -46,6 +47,37 @@ test('appending refuses a linked file, and an atomic write replaces a planted li
   writeTextAtomic(planted, 'new');
   assert.equal(readFileSync(precious, 'utf8'), 'keep');
   assert.equal(readFileSync(planted, 'utf8'), 'new');
+});
+
+test('appending refuses a file with a second hard link', t => {
+  const dir = folder(t);
+  const outside = join(dir, 'outside.txt');
+  writeFileSync(outside, 'keep');
+  const inside = join(dir, 'repo', '.gitignore');
+  mkdirSync(join(dir, 'repo'));
+  try { linkSync(outside, inside); } catch (error) { t.skip(`hard links are not available here: ${error.code}`); return; }
+  assert.throws(() => appendInside(join(dir, 'repo'), inside, 'x'), /several hard links/);
+  assert.equal(readFileSync(outside, 'utf8'), 'keep');
+  // A plain file still appends.
+  const plain = join(dir, 'repo', 'plain.txt');
+  writeFileSync(plain, 'a');
+  appendInside(join(dir, 'repo'), plain, 'b');
+  assert.equal(readFileSync(plain, 'utf8'), 'ab');
+});
+
+test('saving providers never writes through a file or link planted at the old predictable temporary name', t => {
+  const dir = folder(t);
+  const file = join(dir, 'providers.json');
+  const precious = join(dir, 'precious.txt');
+  writeFileSync(precious, 'keep');
+  const planted = `${file}.${process.pid}.tmp`;
+  let linked = true;
+  try { symlinkSync(precious, planted); } catch { linked = false; writeFileSync(planted, 'planted'); }
+  saveProviders(file, [{ id: 'solo', kind: 'codex', family: 'openai' }]);
+  assert.equal(readFileSync(precious, 'utf8'), 'keep');
+  if (!linked) assert.equal(readFileSync(planted, 'utf8'), 'planted');
+  assert.equal(JSON.parse(readFileSync(file, 'utf8')).providers[0].id, 'solo');
+  assert.deepEqual(readdirSync(dir).filter(name => name.endsWith('.tmp') && name !== `providers.json.${process.pid}.tmp`), [], 'no temporary file is left behind');
 });
 
 test('init refuses to write through a linked folder and writes nothing outside the repository', t => {
